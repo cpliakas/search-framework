@@ -53,8 +53,8 @@ class Search_Plugin_Pluggable implements Search_Plugin_Pluggable_Interface
             $weight = $this->_nextWeight++;
         }
         $this->_registeredPlugins[$class] = array(
-          'class' => $class,
-          'weight' => (int) $weight,
+            'class' => $class,
+            'weight' => (int) $weight,
         );
         return $this;
     }

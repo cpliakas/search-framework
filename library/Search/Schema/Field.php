@@ -51,10 +51,10 @@ class Search_Schema_Field extends Search_Plugin_Pluggable
     public function __construct($name, $type = Search_Schema::TYPE_FULLTEXT, $language = Search_Schema::LANGUAGE_NEUTRAL)
     {
         $this
-          ->setProperty('name', $name)
-          ->setProperty('type', $type)
-          ->setProperty('language', $language)
-          ->setProperty('field', $name);
+            ->setProperty('name', $name)
+            ->setProperty('type', $type)
+            ->setProperty('language', $language)
+            ->setProperty('field', $name);
     }
 
     /**

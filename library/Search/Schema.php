@@ -74,8 +74,8 @@ class Search_Schema implements Iterator
         );
 
         $this
-          ->setDefaultOptions($options['schemaDefaults'])
-          ->build($options['schema']);
+            ->setDefaultOptions($options['schemaDefaults'])
+            ->build($options['schema']);
     }
 
     /**
