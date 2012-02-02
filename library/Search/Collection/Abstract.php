@@ -59,26 +59,43 @@ abstract class Search_Collection_Abstract extends Search_Plugin_Pluggable
      *
      * @param Search_Environment_Abstract $environment
      *   The environment indexing the collection.
-     * @param Search_Schema $schema
-     *   The schema mapping the collection being indexed.
      * @param array $options
      *   An array of configuration options.
      */
-    public function __construct(Search_Environment_Abstract $environment, Search_Schema $schema, array $options = array())
+    public function __construct(Search_Environment_Abstract $environment, array $options = array())
     {
         $this->_environment = $environment;
-        $this->_schema = $schema;
         $this->_options = $options;
-        $this->init();
+
+        // Invokes the initCollection hooks.
+        $this->initCollection();
+
+        // Build schems from the initSchema() hook if no options were passed,
+        // otherwise build the schema from the passed options.
+        if (empty($options['schema'])) {
+            $this->_schema = $this->initSchema();
+        } else {
+            $this->_schema = new Search_Schema($options);
+        }
+
+        // Allows the environment to add plugins to the schema.
+        $this->_environment->initSchema($this->_schema);
     }
 
     /**
      * Initializes the collection.
      */
-    public function init()
+    public function initCollection()
     {
         // Initialize collection.
     }
+
+    /**
+     * Initializes the schema.
+     *
+     * @return Search_Schema
+     */
+    abstract public function initSchema();
 
     /**
      * Returns an option.
@@ -101,6 +118,20 @@ abstract class Search_Collection_Abstract extends Search_Plugin_Pluggable
     public function getEnvironment()
     {
         return $this->_environment;
+    }
+
+    /**
+     * Sets the schema.
+     *
+     * @param Search_Schema $schema
+     *   The schema mapping the collection being indexed.
+     *
+     * @return Search_Collection_Abstract
+     */
+    public function setSchema(Search_Schema $schema)
+    {
+        $this->_schema = $schema;
+        return $this;
     }
 
     /**

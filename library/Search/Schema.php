@@ -41,7 +41,7 @@ class Search_Schema implements Iterator
     const TYPE_FLOAT = 'float';
     const TYPE_BOOL = 'boolean';
     const TYPE_BINARY = 'binary';
-    const TYPE_UNINDEXED = 'unindexed';
+    const TYPE_DATE = 'date';
 
     /**
      * An associative array keyed by field name to Search_Schema_Field objects.
@@ -85,6 +85,8 @@ class Search_Schema implements Iterator
      *   An associative array of defaults containing:
      *   - type: The data type of the field, for example "text" or "int". See
      *     the Search_Schema::TYPE_* class constants. Defaults to "text".
+     *   - field: The name of the field in the index. Defaults to null meaning
+     *     the machine name of the field is used.
      *   - language: The subtag as specified in the IANA Language Subtag
      *     Registry at http://www.iana.org/assignments/language-subtag-registry.
      *   - plugins: An array of field plugin class names.
@@ -95,6 +97,7 @@ class Search_Schema implements Iterator
     {
         $this->_defaultOptions = $defaults + array(
             'type' => self::TYPE_FULLTEXT,
+            'field' => null,
             'language' => self::LANGUAGE_NEUTRAL,
             'plugins' => array(),
         );
@@ -122,6 +125,8 @@ class Search_Schema implements Iterator
      *   - name: The machine name of the field used to identify the data in
      *     the source object. For example, if the schema is mapping an RSS
      *     feed, names might be "title", "description", or "link".
+     *   - field: The name of the field in the index. Defaults to null meaning
+     *     the machine name of the field is used.
      *   - type: The data type of the field, for example "text" or "int". See
      *     the Search_Schema::TEXT_* class constants. Defaults to "text".
      *   - language: The subtag as specified in the IANA Language Subtag
@@ -137,18 +142,19 @@ class Search_Schema implements Iterator
         $defaults = $this->getDefaultOptions();
 
         // Iterates over configuration options and adds fields to shcema.
-        foreach ($options as $config) {
-            // Handles strings as options.
-            if (is_string($config)) {
-                $config = array('name' => $config);
+        foreach ($options as $name => $config) {
+            // Strings are treated as the name.
+            if (!is_array($config)) {
+                $config = array('name' => (string) $config);
             }
 
             // Merges in defaults.
             $config += $defaults;
 
-            // A name is required.
+            // The machine name defaults to the array key but can be explicitly
+            // specified in the config array as well.
             if (!isset($config['name'])) {
-                throw new Search_Exception('Name required.');
+               $config['name'] = $name;
             }
 
             // Gets initial set of plugins, keys by plugin class.
@@ -167,11 +173,17 @@ class Search_Schema implements Iterator
             }
 
             // Instantiates field object, registers plugins, and adds to schema.
-            $field = new Search_Schema_Field($config['name'], $config['type'], $config['language']);
+            $field = new Search_Schema_Field($config['name'], $config['field'], $config['type'], $config['language']);
             foreach ($plugins as $class) {
                 $field->registerPlugin($class);
             }
             $this->addField($field);
+
+            // Adds any additional properties.
+            $properties = array_diff_key($defaults, $config);
+            foreach ($properties as $property => $value) {
+                $field->setProperty($property, $value);
+            }
         }
 
         return $this;

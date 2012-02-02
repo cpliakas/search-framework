@@ -60,6 +60,20 @@ abstract class Search_Environment_Abstract
     }
 
     /**
+     * Initializes the schema.
+     *
+     * Implement this hook to add environment specific plugins that are applied
+     * to all collections.
+     *
+     * @param Search_Schema $schema
+     *   The schema plugins are being added to.
+     */
+    public function initSchema(Search_Schema $schema)
+    {
+        // Initialize schema.
+    }
+
+    /**
      * Returns an option.
      *
      * @param string $name

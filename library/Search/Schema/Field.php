@@ -40,6 +40,9 @@ class Search_Schema_Field extends Search_Plugin_Pluggable
      *   The machine name of the field used to identify the data in the source
      *   object. For example, if the schema is mapping an RSS feed, names might
      *   be "title", "description", or "link".
+     * @param string $field
+     *   The name of the field in the index. Defaults to NULL meaning that $name
+     *   is used.
      * @param string $type
      *   The data type of the field, for example "fulltext" or "int". See the
      *   Search_Schema::TYPE_* class constants. Defaults to "fulltext".
@@ -48,13 +51,16 @@ class Search_Schema_Field extends Search_Plugin_Pluggable
      *   http://www.iana.org/assignments/language-subtag-registry. Defaults to
      *   "und".
      */
-    public function __construct($name, $type = Search_Schema::TYPE_FULLTEXT, $language = Search_Schema::LANGUAGE_NEUTRAL)
+    public function __construct($name, $field = null, $type = Search_Schema::TYPE_FULLTEXT, $language = Search_Schema::LANGUAGE_NEUTRAL)
     {
+        if (null === $field) {
+            $field = $name;
+        }
         $this
             ->setProperty('name', $name)
+            ->setProperty('field', $field)
             ->setProperty('type', $type)
-            ->setProperty('language', $language)
-            ->setProperty('field', $name);
+            ->setProperty('language', $language);
     }
 
     /**
