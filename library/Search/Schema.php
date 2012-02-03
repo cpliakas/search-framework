@@ -58,6 +58,13 @@ class Search_Schema implements Iterator
     protected $_defaultOptions = array();
 
     /**
+     * The machine name of field containing the unique identifiers.
+     *
+     * @var string|false
+     */
+    protected $_uniqueIdentifier = false;
+
+    /**
      * Optionally adds fields to the schema it options were passed.
      *
      * @param array $options
@@ -99,6 +106,7 @@ class Search_Schema implements Iterator
             'type' => self::TYPE_FULLTEXT,
             'field' => null,
             'language' => self::LANGUAGE_NEUTRAL,
+            'unique' => false,
             'plugins' => array(),
         );
 
@@ -155,6 +163,11 @@ class Search_Schema implements Iterator
             // specified in the config array as well.
             if (!isset($config['name'])) {
                $config['name'] = $name;
+            }
+
+            // If this field is unique, set it as the unique identifier.
+            if ($config['unique']) {
+                $this->setUniqueIdentifier($config['name']);
             }
 
             // Gets initial set of plugins, keys by plugin class.
@@ -229,6 +242,30 @@ class Search_Schema implements Iterator
     {
         unset($this->_schemaFields[$name]);
         return $this;
+    }
+
+    /**
+     * Sets the machine name of the field containing the unique identifier.
+     *
+     * @param string $name
+     *   The machine name of the field.
+     *
+     * @return Search_Schema
+     */
+    public function setUniqueIdentifier($name)
+    {
+        $this->_uniqueIdentifier = $name;
+        return $this;
+    }
+
+    /**
+     * Gets the machine name of the field containing the unique identifier.
+     *
+     * @return string|false
+     */
+    public function getUniqueIdentifier()
+    {
+        return $this->_uniqueIdentifier;
     }
 
     /**
