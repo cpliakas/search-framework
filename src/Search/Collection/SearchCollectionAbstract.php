@@ -8,6 +8,7 @@
 
 namespace Search\Collection;
 
+use Search\Server\SearchServerAbstract;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
@@ -18,6 +19,12 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  */
 abstract class SearchCollectionAbstract
 {
+    /**
+     * Flags that there is no limit of the number of documents processed when
+     * running the queue.
+     */
+    const NO_LIMIT = -1;
+
     /**
      * An associative array of configuration options. Options are specific to
      * to each collection. For example, an RSS collection might require an
@@ -42,6 +49,7 @@ abstract class SearchCollectionAbstract
      *   to all collections are the following:
      *   - dispatcher: Optionally pass an EventDispatcher object. This option is
      *     most often used to set a global event dispatcher.
+     *   - limit: The maximum number of documents
      */
     public function __construct(array $options = array())
     {
@@ -60,11 +68,19 @@ abstract class SearchCollectionAbstract
     abstract public function init();
 
     /**
+     * Returns a list of items enqueued for indexing.
      *
-     * @return array
-     *   An array of SearchIndexField objects.
+     * In this instance, a queue is simply a collection that can be iterated
+     * over using `foreach()`. Items in the queue could be a unique identifier
+     * or fully populated object.
+     *
+     * @param int $limit
+     *   The maximum number of documents to process. Defaults to -1, which
+     *   mean there is no limit on the number of documents processed.
+     *
+     * @return SearchCollectionQueue
      */
-    abstract public function extractFields();
+    abstract public function getQueue($limit = self::NO_LIMIT);
 
     /**
      * Sets or resets a configuration option.
@@ -138,17 +154,13 @@ abstract class SearchCollectionAbstract
     }
 
     /**
-     * Builds and returns an object that models a document from the datasource
-     * being indexed.
-     *
-     * @param string|int $id
-     *   The unique identifier of the document such as a UUID, serialized
-     *   integer, URL, etc.
-     *
-     * @return SearchCollectionDocument
+     * @param int $limit
+     *   The maximum number of documents to process. Defaults to -1, which
+     *   mean there is no limit on the number of documents processed.
      */
-    public function buildDocument($id)
+    public function index(SearchServerAbstract $server, $limit = self::NO_LIMIT)
     {
-
+        $queue = $this->getQueue($limit);
+        $queue->processQueue($server, $this, $limit);
     }
 }

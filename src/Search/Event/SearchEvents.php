@@ -14,6 +14,20 @@ namespace Search\Event;
 class SearchEvents
 {
     /**
+     * Event thrown prior to processing a queue.
+     *
+     * @var string
+     */
+    const QUEUE_PRE_PROCESS = 'search.queue.preProcess';
+
+    /**
+     * Event thrown prior to processing a queue.
+     *
+     * @var string
+     */
+    const QUEUE_POST_PROCESS = 'search.queue.postProcess';
+
+    /**
      * Event thrown after a field is extracted from the source data.
      *
      * This event is intended to add metadata or pull additional information
@@ -40,5 +54,5 @@ class SearchEvents
      *
      * @var string
      */
-    const FIELD_NORMALIZE = 'search.docuemnt.alter';
+    const DOCUMENT_ALTER = 'search.docuemnt.alter';
 }
