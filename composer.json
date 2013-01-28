@@ -1,0 +1,23 @@
+{
+    "name": "cpliakas/search-framework",
+    "type": "library",
+    "description": "A search framework that facilitates reusable code and concepts across search backend libraries.",
+    "keywords": ["git"],
+    "homepage": "https://github.com/cpliakas/search-framework",
+    "license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "Chris Pliakas",
+            "email": "opensource@chrispliakas.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "symfony/event-dispatcher": "2.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Search": "src/"
+        }
+    }
+}

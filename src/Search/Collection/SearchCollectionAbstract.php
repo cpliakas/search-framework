@@ -1,230 +1,154 @@
 <?php
 
 /**
- * Search Tools
+ * Search Framework
  *
- * LICENSE
- *
- * This source file is subject to the GNU Lesser General Public License that is
- * bundled with this package in the file LICENSE.txt. It is also available for
- * download at http://www.gnu.org/licenses/lgpl-3.0.txt.
- *
- * @license    http://www.gnu.org/licenses/lgpl-3.0.txt
- * @copyright  Copyright (c) 2012 Chris Pliakas <cpliakas@gmail.com>
+ * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
+
+namespace Search\Collection;
+
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Adapter for search collections.
  *
- * Collections are some dat that is being indexed. Examples are filesystems, RSS
- * feeds, or the data model of the CMS you are using. Each collection is passed
- * an environemnt instance and a schema instance to it can be reused across
- * multiple applications.
- *
- * @package    Search
- * @subpackage Collection
+ * Collections are datasources that are being indexed. Examples are filesystems,
+ * RSS feeds, or the content in a CMS.
  */
-abstract class Search_Collection_Abstract extends Search_Plugin_Pluggable
+abstract class SearchCollectionAbstract
 {
     /**
-     * The environment indexing the collection.
-     *
-     * @var Search_Environment_Abstract
-     */
-    protected $_environment;
-
-    /**
-     * The schema mapping the collection being indexed.
-     *
-     * @var Search_Schema
-     */
-    protected $_schema;
-
-    /**
-     * An array of options.
+     * An associative array of configuration options. Options are specific to
+     * to each collection. For example, an RSS collection might require an
+     * option that specifies the source URL.
      *
      * @var array
      */
-    protected $_options = array();
+    protected $_options;
 
     /**
-     * A registry of instantiated plugins keyed by class name.
+     * The event dispatcher used by this collection to throw events.
      *
-     * @var array
+     * @var EventDispatcher
      */
-    protected $_plugins = array();
+    protected $_dispatcher;
 
     /**
-     * Sets the environment and schema.
+     * Constructs a SearchCollectionAbstract object.
      *
-     * @param Search_Environment_Abstract $environment
-     *   The environment indexing the collection.
      * @param array $options
-     *   An array of configuration options.
+     *   An associative array of configuration options. Common options available
+     *   to all collections are the following:
+     *   - dispatcher: Optionally pass an EventDispatcher object. This option is
+     *     most often used to set a global event dispatcher.
      */
-    public function __construct(Search_Environment_Abstract $environment, array $options = array())
+    public function __construct(array $options = array())
     {
-        $this->_environment = $environment;
         $this->_options = $options;
 
-        // Invokes the initCollection hooks.
-        $this->initCollection();
-
-        // Build schems from the initSchema() hook if no options were passed,
-        // otherwise build the schema from the passed options.
-        if (empty($options['schema'])) {
-            $this->_schema = $this->initSchema();
-        } else {
-            $this->_schema = new Search_Schema($options);
+        if (!empty($options['dispatcher'])) {
+            $this->setDispatcher($options['dispatcher']);
         }
 
-        // Allows the environment to add plugins to the schema.
-        $this->_environment->initSchema($this->_schema);
+        $this->init();
     }
 
     /**
-     * Initializes the collection.
+     * Hook that allows the collection object to initialize itself.
      */
-    public function initCollection()
-    {
-        // Initialize collection.
-    }
+    abstract public function init();
 
     /**
-     * Initializes the schema.
      *
-     * @return Search_Schema
+     * @return array
+     *   An array of SearchIndexField objects.
      */
-    abstract public function initSchema();
+    abstract public function extractFields();
 
     /**
-     * Returns an option.
+     * Sets or resets a configuration option.
      *
-     * @param string $name
-     *   The option key.
+     * @param string $option
+     *   The name of the configuration option.
+     * @param mixed $value
+     *   The configuration option's value.
      *
-     * @return mixed|null
+     * @return SearchCollectionAbstract
      */
-    public function getOption($name)
+    public function setOption($option, $value)
     {
-        return isset($this->_options[$name]) ? $this->_options[$name] : null;
-    }
-
-    /**
-     * Returns the environment indexing the collection.
-     *
-     * @return Search_Environment_Abstract
-     */
-    public function getEnvironment()
-    {
-        return $this->_environment;
-    }
-
-    /**
-     * Sets the schema.
-     *
-     * @param Search_Schema $schema
-     *   The schema mapping the collection being indexed.
-     *
-     * @return Search_Collection_Abstract
-     */
-    public function setSchema(Search_Schema $schema)
-    {
-        $this->_schema = $schema;
+        $this->_options[$option] = $value;
         return $this;
     }
 
     /**
-     * Returns the schema mapping the collection being indexed.
+     * Returns a configuration option's value.
      *
-     * @return Search_Schema
+     * @param string $option
+     *   The name of the configuration option.
+     * @param mixed $default
+     *   The default value returned if the configuration option is not set,
+     *   defaults to null.
+     *
+     * @return mixed
      */
-    public function getSchema()
+    public function getOption($option, $default = null)
     {
-        return $this->_schema;
+        return isset($this->_options[$option]) ? $this->_options[$option] : $default;
     }
 
     /**
-     * Returns the data queued for indexing.
+     * Returns the associative array of configuration options.
      *
-     * This either returns the raw data structure of the content being indexed
-     * or unique IDs that the Search_Environment_Abstract::loadSource() method
-     * can use to load the full data structure.
-     *
-     * @return Iterator
+     * @return array
      */
-    abstract public function getIndexQueue();
-
-    /**
-     * Indexes the collection and invokes the collection plugin hooks.
-     */
-    public function index()
+    public function getOptions()
     {
-        $environment = $this->getEnvironment();
-        $schema = $this->getSchema();
-
-        // Gets the plugin queue.
-        $hooks = array(
-            'preIndexCollection',
-            'preIndexDocument',
-            'postIndexDocument',
-            'postIndexCollection',
-        );
-        $baseClasses = array('Search_Collection_Plugin');
-        $pluginQueue = $this->getPluginQueue($hooks, $baseClasses);
-
-        // Invokes each plugin's preIndexCollection hook.
-        $environment->preIndexCollection();
-        foreach ($pluginQueue['preIndexCollection'] as $class) {
-            $this->pluginFactory($class)->preIndexCollection();
-        }
-
-        // Iterates over the queue of content to be indexed.
-        foreach ($this->getIndexQueue() as $source) {
-
-            // If the queue returns ID's, load the actual source.
-            $source = $environment->loadSource($source);
-
-            // Initializes the document.
-            $document = $environment->initDocument($source, $schema);
-
-            // Invoke each plugin's preIndexDocument hook.
-            foreach ($pluginQueue['preIndexDocument'] as $class) {
-                $this->pluginFactory($class)->preIndexDocument($document, $source);
-            }
-
-            // Perform actual indexing operations.
-            $environment->indexDocument($document, $source, $schema);
-
-            // Invoke each plugin's postIndexDocument hook.
-            foreach ($pluginQueue['postIndexDocument'] as $class) {
-                $this->pluginFactory($class)->postIndexDocument($document, $source);
-            }
-        }
-
-        // Invokes each plugin's postIndexCollection hook.
-        foreach ($pluginQueue['postIndexCollection'] as $class) {
-            $this->pluginFactory($class)->postIndexCollection();
-        }
-        $environment->postIndexCollection();
+        return $this->_options;
     }
 
     /**
-     * Factory for collection plugins.
+     * Sets the event dispatcher used by this collection to throw events.
      *
-     * Caches plugin instances in a class property so we only instantiate them
-     * once per collection.
+     * @param EventDispatcher $dispatcher
+     *   The event dispatcher.
      *
-     * @param string $class
-     *   The name of the class being instantiated.
-     *
-     * @return Search_Collection_Plugin
+     * @return SearchCollectionAbstract
      */
-    public function pluginFactory($class)
+    public function setDispatcher(EventDispatcher $dispatcher)
     {
-        if (!isset($_plugins[$class])) {
-            $_plugins[$class] = new $class($this);
+        $this->_dispatcher = $dispatcher;
+        return $this;
+    }
+
+    /**
+     * Sets the event dispatcher used by this collection to throw events.
+     *
+     * If no event dispatcher is set, then one is instantiated automatically.
+     *
+     * @return EventDispatcher
+     */
+    public function getDispatcher()
+    {
+        if (!isset($this->_dispatcher)) {
+            $this->_dispatcher = new EventDispatcher();
         }
-        return $_plugins[$class];
+        return $this->_dispatcher;
+    }
+
+    /**
+     * Builds and returns an object that models a document from the datasource
+     * being indexed.
+     *
+     * @param string|int $id
+     *   The unique identifier of the document such as a UUID, serialized
+     *   integer, URL, etc.
+     *
+     * @return SearchCollectionDocument
+     */
+    public function buildDocument($id)
+    {
+
     }
 }
