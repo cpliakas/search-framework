@@ -2,7 +2,7 @@
     "name": "cpliakas/search-framework",
     "type": "library",
     "description": "A search framework that facilitates reusable code and concepts across search backend libraries.",
-    "keywords": ["git"],
+    "keywords": ["search", "search-framework"],
     "homepage": "https://github.com/cpliakas/search-framework",
     "license": "LGPL-3.0",
     "authors": [
