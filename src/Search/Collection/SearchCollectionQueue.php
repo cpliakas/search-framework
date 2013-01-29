@@ -8,6 +8,8 @@
 
 namespace Search\Collection;
 
+use Search\Server\SearchServerAbstract;
+
 /**
  * In this instance, a queue is simply a collection that can be iterated over
  * using `foreach()`.
@@ -63,9 +65,19 @@ class SearchCollectionQueue
      */
     public function processQueue(SearchServerAbstract $server, SearchCollectionAbstract $collection)
     {
+        $dispatcher = $server->getDispatcher();
         foreach ($this->_items as $item) {
-            $document = $collection->loadDocument($item);
+            $document = $server->getDocument();
+
+            // $dispatcher->dispatch(); search.document.initialize
+
+            $collection->buildDocument($document, $item);
+
+            // $dispatcher->dispatch(); search.document.preIndex
+
             $server->indexDocument($document);
+
+            // $dispatcher->dispatch(); search.document.postIndex
         }
     }
 }

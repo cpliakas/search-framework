@@ -8,8 +8,8 @@
 
 namespace Search\Collection;
 
+use Search\Index\SearchIndexDocument;
 use Search\Server\SearchServerAbstract;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Adapter for search collections.
@@ -27,13 +27,6 @@ abstract class SearchCollectionAbstract
      * @var array
      */
     protected $_options;
-
-    /**
-     * The event dispatcher used by this collection to throw events.
-     *
-     * @var EventDispatcher
-     */
-    protected $_dispatcher;
 
     /**
      * Constructs a SearchCollectionAbstract object.
@@ -62,7 +55,7 @@ abstract class SearchCollectionAbstract
     abstract public function init();
 
     /**
-     * Returns a list of items enqueued for indexing.
+     * Returns an object containing the items enqueued for indexed.
      *
      * In this instance, a queue is simply a collection that can be iterated
      * over using `foreach()`. Items in the queue could be a unique identifier
@@ -75,6 +68,35 @@ abstract class SearchCollectionAbstract
      * @return SearchCollectionQueue
      */
     abstract public function getQueue($limit = SearchCollectionQueue::NO_LIMIT);
+
+    /**
+     * Populates the document with fields extracted from the the source data.
+     *
+     * @param SearchIndexDocument $document
+     *   The document object instantiated by the server.
+     * @param mixed $data
+     *   The source data being indexed.
+     */
+    public function buildDocument(SearchIndexDocument $document, $data);
+
+    /**
+     * Loads the source data, defaults to returning the item passed to it.
+     *
+     * This method is useful for lazy-loading the source data given a unique
+     * identifier. For example, when loading data from a CMS, the item will
+     * often be an identifier of the content being indexed.
+     *
+     * @param mixed $item
+     *   The item being indexed. An item is usually a unique identifier but
+     *   could also be a fully populated object containing the source data.
+     *
+     * @return mixed
+     *   The source data being indexed.
+     */
+    public function loadSourceData($item)
+    {
+        return $item;
+    }
 
     /**
      * Sets or resets a configuration option.
@@ -116,35 +138,6 @@ abstract class SearchCollectionAbstract
     public function getOptions()
     {
         return $this->_options;
-    }
-
-    /**
-     * Sets the event dispatcher used by this collection to throw events.
-     *
-     * @param EventDispatcher $dispatcher
-     *   The event dispatcher.
-     *
-     * @return SearchCollectionAbstract
-     */
-    public function setDispatcher(EventDispatcher $dispatcher)
-    {
-        $this->_dispatcher = $dispatcher;
-        return $this;
-    }
-
-    /**
-     * Sets the event dispatcher used by this collection to throw events.
-     *
-     * If no event dispatcher is set, then one is instantiated automatically.
-     *
-     * @return EventDispatcher
-     */
-    public function getDispatcher()
-    {
-        if (!isset($this->_dispatcher)) {
-            $this->_dispatcher = new EventDispatcher();
-        }
-        return $this->_dispatcher;
     }
 
     /**

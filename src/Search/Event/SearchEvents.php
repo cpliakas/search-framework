@@ -28,18 +28,19 @@ class SearchEvents
     const QUEUE_POST_PROCESS = 'search.queue.postProcess';
 
     /**
-     * Event thrown after a field is extracted from the source data.
+     * Event thrown after a field is extracted from the source data and added to
+     * the document.
      *
-     * This event is intended to add metadata or pull additional information
-     * from external sources, whether that source is a related piece of content
-     * or data from an external source.
+     * This event is intended to add metadata to the field or add additional
+     * fields based on the field data being processed. If can also be used to
+     * change the name of the field as it is stored in the index.
      *
      * @var string
      */
     const FIELD_ENRICH = 'search.field.enrich';
 
     /**
-     * Event thrown after a enrichment.
+     * Event thrown when the backend retrieves the value for indexing.
      *
      * This event is intended to be used to clean and normalize the content in
      * order to prepare it for indexing. When possible, the native normalization
@@ -50,9 +51,17 @@ class SearchEvents
     const FIELD_NORMALIZE = 'search.field.normalize';
 
     /**
-     * Event thrown just prior to indexing a document.
+     * Event thrown after a document was populated with fields and prior to it
+     * being processed for indexing.
      *
      * @var string
      */
-    const DOCUMENT_ALTER = 'search.docuemnt.alter';
+    const DOCUMENT_PRE_INDEX = 'search.docuemnt.preIndex';
+
+    /**
+     * Event thrown after a document was processed for indexing.
+     *
+     * @var string
+     */
+    const DOCUMENT_POST_INDEX = 'search.docuemnt.postIndex';
 }
