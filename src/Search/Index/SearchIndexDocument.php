@@ -8,6 +8,8 @@
 
 namespace Search\Index;
 
+use Search\Event\SearchEvents;
+use Search\Event\SearchFieldEvent;
 use Search\Index\SearchIndexField;
 use Search\Server\SearchServerAbstract;
 
@@ -45,7 +47,18 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
+     * Implements \IteratorAggregate::getIterator().
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->_fields);
+    }
+
+    /**
      * Adds a field to the document.
+     *
+     * This method throws the SearchEvents::FIELD_ENRICH event and stores the
+     * enhanced value.
      *
      * @param SearchIndexField $field
      *   The field being added to this document.
@@ -54,9 +67,15 @@ class SearchIndexDocument implements \IteratorAggregate
      */
     public function addField(SearchIndexField $field)
     {
-        // $dispatcher->dispatch(); search.field.enhance
+        // Throw the SearchEvents::FIELD_ENRICH event, reset the field's value
+        // with the enhanced value.
+        $event = new SearchFieldEvent($this->_server, $field);
+        $this->_server->getDispatcher()->dispatch(SearchEvents::FIELD_ENRICH, $event);
+        $field->setValue($event->getValue());
+
         $id = $field->getId();
         $this->_fields[$id] = $field;
+
         return $this;
     }
 
@@ -66,7 +85,7 @@ class SearchIndexDocument implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchCollectionField
+     * @return SearchIndexField
      *
      * @throws \InvalidArgumentException
      *
@@ -118,19 +137,34 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Implements \IteratorAggregate::getIterator().
+     * Returns a normalized field value.
+     *
+     * This method throws the SearchEvents::FIELD_NORMALIZE event and returns
+     * the normalized value from the event object.
+     *
+     * @param string $id
+     *   The unique identifier of the field that its name as stored in the index
+     *   defaults to.
+     *
+     * @return string|array
+     *   The field's normalized value(s).
      */
-    public function getIterator()
+    public function getNormalizedFieldValue($id)
     {
-        return new \ArrayIterator($this);
+        $field = $this->getField($id);
+
+        $event = new SearchFieldEvent($this->_server, $field);
+        $this->_server->getDispatcher()->dispatch(SearchEvents::FIELD_ENRICH, $event);
+
+        return $event->getValue();
     }
 
     /**
      * Instiantiates and adds a field to this document.
      *
      * @param string $id
-     *   The unique identifier of this field that the name of the field as
-     *   stored in the index defaults to.
+     *   The unique identifier of the field that its name as stored in the index
+     *   defaults to.
      * @param string|array $value
      *   The field's value extracted form the source text.
      */
@@ -143,12 +177,11 @@ class SearchIndexDocument implements \IteratorAggregate
     /**
      * Returns a field's normalized value that is attached to this document.
      *
-     * @see SearchIndexDocument::getField()
-     * @see SearchIndexField::getNormalizedValue()
+     * @see SearchIndexDocument::getNormalizedFieldValue()
      */
     public function __get($id)
     {
-        return $this->getField($id)->getNormalizedValue($this->_server);
+        return $this->getNormalizedFieldValue($id);
     }
 
     /**

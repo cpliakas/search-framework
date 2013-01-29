@@ -18,14 +18,7 @@ class SearchEvents
      *
      * @var string
      */
-    const QUEUE_PRE_PROCESS = 'search.queue.preProcess';
-
-    /**
-     * Event thrown prior to processing a queue.
-     *
-     * @var string
-     */
-    const QUEUE_POST_PROCESS = 'search.queue.postProcess';
+    const QUEUE_PRE_PROCESS = 'search.queue.pre_process';
 
     /**
      * Event thrown after a field is extracted from the source data and added to
@@ -56,12 +49,19 @@ class SearchEvents
      *
      * @var string
      */
-    const DOCUMENT_PRE_INDEX = 'search.docuemnt.preIndex';
+    const DOCUMENT_PRE_INDEX = 'search.docuemnt.pre_index';
 
     /**
      * Event thrown after a document was processed for indexing.
      *
      * @var string
      */
-    const DOCUMENT_POST_INDEX = 'search.docuemnt.postIndex';
+    const DOCUMENT_POST_INDEX = 'search.docuemnt.post_index';
+
+    /**
+     * Event thrown prior to processing a queue.
+     *
+     * @var string
+     */
+    const QUEUE_POST_PROCESS = 'search.queue.post_process';
 }

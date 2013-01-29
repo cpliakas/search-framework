@@ -8,6 +8,8 @@
 
 namespace Search\Collection;
 
+use Search\Event\SearchDocumentEvent;
+use Search\Event\SearchEvents;
 use Search\Server\SearchServerAbstract;
 
 /**
@@ -66,18 +68,18 @@ class SearchCollectionQueue
     public function processQueue(SearchServerAbstract $server, SearchCollectionAbstract $collection)
     {
         $dispatcher = $server->getDispatcher();
+
         foreach ($this->_items as $item) {
+
             $document = $server->getDocument();
+            $data = $collection->loadSourceData($item);
+            $event = new SearchDocumentEvent($server, $document, $data);
 
-            // $dispatcher->dispatch(); search.document.initialize
+            $collection->buildDocument($document, $data);
 
-            $collection->buildDocument($document, $item);
-
-            // $dispatcher->dispatch(); search.document.preIndex
-
+            $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $event);
             $server->indexDocument($document);
-
-            // $dispatcher->dispatch(); search.document.postIndex
+            $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $event);
         }
     }
 }

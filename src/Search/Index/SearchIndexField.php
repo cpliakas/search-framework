@@ -8,15 +8,14 @@
 
 namespace Search\Index;
 
-use Search\Server\SearchServerAbstract;
-
 /**
  * Models a field in the source data being indexed.
  */
 class SearchIndexField
 {
     /**
-     * The unique identifier of this field.
+     * The unique identifier of the field that its name as stored in the index
+     * defaults to.
      *
      * @var string
      */
@@ -26,7 +25,7 @@ class SearchIndexField
      * The name of this field as stored in the index.
      *
      * This value defaults to the unique identifier of the field, however it is
-     * perfectly valid if this value is modified.
+     * perfectly valid to change the name to something else.
      *
      * @var string
      */
@@ -43,34 +42,16 @@ class SearchIndexField
      * Constructs a SearchIndexField object.
      *
      * @param string $id
-     *   The unique identifier of this field that the name of the field as
-     *   stored in the index defaults to.
+     *   The unique identifier of the field that its name as stored in the index
+     *   defaults to.
      * @param string|array $value
      *   The field's value extracted form the source text.
      */
     public function __construct($id, $value)
     {
-        $this
-            ->_setId($id)
-            ->setName($id)
-            ->setValue($value);
-    }
-
-    /**
-     * Sets the unique identifier of this field.
-     *
-     * Unlike the name of the field as it is stored in the index, the unique
-     * identifier should not be changed after the object is instantiated.
-     *
-     * @param string $id
-     *   The unique identifier of this field.
-     *
-     * @return SearchIndexField
-     */
-    protected function _setId($id)
-    {
         $this->_id = $id;
-        return $this;
+        $this->_name = $id;
+        $this->_value = $value;
     }
 
     /**
@@ -128,20 +109,6 @@ class SearchIndexField
      */
     public function getValue()
     {
-        return $this->_value;
-    }
-
-    /**
-     * Returns the normalized value.
-     *
-     * @param SearchServerAbstract $server
-     *   The server that the value is being prepared to index to.
-     *
-     * @return string|array
-     */
-    public function getNormalizedValue(SearchServerAbstract $server)
-    {
-        // $dispatcher->dispatch(); search.field.normalize
         return $this->_value;
     }
 }
