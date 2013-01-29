@@ -20,12 +20,6 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 abstract class SearchCollectionAbstract
 {
     /**
-     * Flags that there is no limit of the number of documents processed when
-     * running the queue.
-     */
-    const NO_LIMIT = -1;
-
-    /**
      * An associative array of configuration options. Options are specific to
      * to each collection. For example, an RSS collection might require an
      * option that specifies the source URL.
@@ -80,7 +74,7 @@ abstract class SearchCollectionAbstract
      *
      * @return SearchCollectionQueue
      */
-    abstract public function getQueue($limit = self::NO_LIMIT);
+    abstract public function getQueue($limit = SearchCollectionQueue::NO_LIMIT);
 
     /**
      * Sets or resets a configuration option.
@@ -154,11 +148,13 @@ abstract class SearchCollectionAbstract
     }
 
     /**
+     * Indexes items in a collection that are queued for indexing.
+     *
      * @param int $limit
      *   The maximum number of documents to process. Defaults to -1, which
      *   mean there is no limit on the number of documents processed.
      */
-    public function index(SearchServerAbstract $server, $limit = self::NO_LIMIT)
+    public function index(SearchServerAbstract $server, $limit = SearchCollectionQueue::NO_LIMIT)
     {
         $queue = $this->getQueue($limit);
         $queue->processQueue($server, $this, $limit);

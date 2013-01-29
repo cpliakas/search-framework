@@ -15,6 +15,12 @@ namespace Search\Collection;
 class SearchCollectionQueue
 {
     /**
+     * Flags that there is no limit of the number of documents processed when
+     * running the queue.
+     */
+    const NO_LIMIT = -1;
+
+    /**
      * The items queued for indexing.
      *
      * @var \Traversable|array
