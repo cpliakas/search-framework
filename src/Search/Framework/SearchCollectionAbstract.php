@@ -104,6 +104,24 @@ abstract class SearchCollectionAbstract
     }
 
     /**
+     * Returns the path to the .collection.yml file.
+     *
+     * The method assumes that the follwing directory structure is used:
+     * `{src-dir}/Search/Collection/{collection-name}/{collection-class}.php`
+     *
+     * @return string|false
+     *   The absolute path to the configuration file, false if the file does not
+     *   exist or could not be resolved.
+     */
+    public function getConfigFile()
+    {
+        $reflection = new \ReflectionClass($this);
+        $class_dir = dirname($reflection->getFileName());
+        $config_dir = $class_dir . '/../../../../';
+        return realpath($config_dir . '/.collection.yml' );
+    }
+
+    /**
      * Sets or overrides a configuration option.
      *
      * @param string $option
