@@ -14,7 +14,7 @@ namespace Search\Event;
 class SearchEvents
 {
     /**
-     * Event thrown prior to processing a queue.
+     * Event thrown prior to processing a collection's queue.
      *
      * @var string
      */
@@ -59,7 +59,7 @@ class SearchEvents
     const DOCUMENT_POST_INDEX = 'search.docuemnt.post_index';
 
     /**
-     * Event thrown prior to processing a queue.
+     * Event thrown after processing a collection's queue has completed.
      *
      * @var string
      */
