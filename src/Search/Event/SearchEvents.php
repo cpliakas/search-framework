@@ -9,7 +9,7 @@
 namespace Search\Event;
 
 /**
- * A list of events throws by the Search Framework library.
+ * A list of events thrown by the Search Framework library.
  */
 class SearchEvents
 {

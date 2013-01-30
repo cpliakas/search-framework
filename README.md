@@ -14,12 +14,13 @@ Usage
 ```php
 
 // Classes used to index an RSS feed into Solr.
+// @see https://github.com/cpliakas/feed-collection
 use Search\Collection\Feed\FeedCollection;
 use Search\Server\Solarium\SolariumSearchServer;
 
 require 'vendor/autoload.php';
 
-// Define collection, or source data, being indexed / searched.
+// Define the collection, or source data, being indexed / searched.
 $drupal_planet = new FeedCollection();
 $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
 
