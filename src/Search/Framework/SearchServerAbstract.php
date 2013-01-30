@@ -6,12 +6,8 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Framework\Server;
+namespace Search\Framework;
 
-use Search\Framework\Collection\SearchCollectionAbstract;
-use Search\Framework\Collection\SearchCollectionQueue;
-use Search\Framework\Index\SearchIndexDocument;
-use Search\Framework\Index\SearchIndexField;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
@@ -20,14 +16,14 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 abstract class SearchServerAbstract
 {
     /**
-     * The event dispatcher used by this collection to throw events.
+     * The event dispatcher used by this search server to throw events.
      *
      * @var EventDispatcher
      */
     protected $_dispatcher;
 
     /**
-     * An array of collections indexed by this server.
+     * An array of collections that are associated with this search server.
      *
      * @var array
      */
@@ -42,7 +38,7 @@ abstract class SearchServerAbstract
     abstract public function indexDocument(SearchIndexDocument $document);
 
     /**
-     * Returns a search index document object for this backend.
+     * Returns a search index document object specific to the extending backend.
      *
      * @return SearchIndexDocument
      */
@@ -52,7 +48,7 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Returns a search index field object for this backend.
+     * Returns a search index field object specific to the extending backend.
      *
      * @return SearchIndexField
      */
@@ -62,7 +58,7 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Sets the event dispatcher used by this collection to throw events.
+     * Sets the event dispatcher used by this search server to throw events.
      *
      * @param EventDispatcher $dispatcher
      *   The event dispatcher.
@@ -76,9 +72,9 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Sets the event dispatcher used by this collection to throw events.
+     * Sets the event dispatcher used by this search server to throw events.
      *
-     * If no event dispatcher is set, then one is instantiated automatically.
+     * If no event dispatcher is set, one is instantiated automatically.
      *
      * @return EventDispatcher
      */
@@ -91,10 +87,10 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Associates a collection with this server.
+     * Associates a collection with this search server.
      *
      * @param SearchCollectionAbstract $collection
-     *   The collection being associated with this server.
+     *   The collection being associated with this search server.
      *
      * @return SearchServerAbstract
      */
@@ -105,7 +101,7 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Returns all collections indexed by this server.
+     * Returns all collections associated with this search server.
      *
      * @return array
      */
@@ -115,12 +111,14 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Indexes all items enqueued for indexing in all colections associated with
-     * this server.
+     * Iterates over all collections associated with this search server and
+     * processes the items enqueued for indexing.
      *
      * @param int|null $limit
      *   The maximum number of items to process, defaults to null which uses the
      *   default setting.
+     *
+     * @see SearchCollectionAbstract::index()
      */
     public function index($limit = SearchCollectionQueue::NO_LIMIT)
     {

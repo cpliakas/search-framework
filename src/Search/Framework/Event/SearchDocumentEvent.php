@@ -8,8 +8,8 @@
 
 namespace Search\Framework\Event;
 
-use Search\Framework\Index\SearchIndexDocument;
-use Search\Framework\Server\SearchServerAbstract;
+use Search\Framework\SearchIndexDocument;
+use Search\Framework\SearchServerAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -18,7 +18,7 @@ use Symfony\Component\EventDispatcher\Event;
 class SearchDocumentEvent extends Event
 {
     /**
-     * The server that the document is being prepared for indexing to.
+     * The search server that is indexing the document.
      *
      * @var SearchServerAbstract
      */
@@ -42,7 +42,7 @@ class SearchDocumentEvent extends Event
      * Constructs a SearchDocumentEvent object.
      *
      * @param SearchServerAbstract $server
-     *   The server that the document is being prepared for indexing to.
+     *   The search server that is indexing the document.
      * @param SearchIndexDocument $document
      *   The document modeling the source data being indexed.
      * @param mixed $data
@@ -56,7 +56,7 @@ class SearchDocumentEvent extends Event
     }
 
     /**
-     * Returns server that the document is being prepared for indexing to.
+     * Returns the search server that is indexing the document.
      *
      * @return SearchServerAbstract
      */
@@ -76,7 +76,7 @@ class SearchDocumentEvent extends Event
     }
 
     /**
-     * Returns server that the document is being prepared for indexing to.
+     * The source data being indexed.
      *
      * @return mixed
      */

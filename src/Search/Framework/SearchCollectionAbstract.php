@@ -6,23 +6,23 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Framework\Collection;
+namespace Search\Framework;
 
-use Search\Framework\Index\SearchIndexDocument;
-use Search\Framework\Server\SearchServerAbstract;
+use Search\Framework\Event\SearchDocumentEvent;
+use Search\Framework\Event\SearchQueueEvent;
 
 /**
- * Adapter for search collections.
+ * Adapter class extended by search collections.
  *
- * Collections are datasources that are being indexed. Examples are filesystems,
- * RSS feeds, or the content in a CMS.
+ * Collections are datasources that are being indexed. Examples are files on a
+ * filesystem, RSS feeds, or the content in a CMS.
  */
 abstract class SearchCollectionAbstract
 {
     /**
-     * An associative array of configuration options. Options are specific to
-     * to each collection. For example, an RSS collection might require an
-     * option that specifies the source URL.
+     * An associative array of configuration options for this collection.
+     * The options are specific to to each collection. For example, an RSS
+     * collection might provide an option that specifies the feed's URL.
      *
      * @var array
      */
@@ -35,7 +35,8 @@ abstract class SearchCollectionAbstract
      *   An associative array of configuration options. Common options available
      *   to all collections are the following:
      *   - dispatcher: Optionally pass an EventDispatcher object. This option is
-     *     most often used to set a global event dispatcher.
+     *     most often used to set a global event dispatcher instantiated
+     *     somewhere else in the application.
      */
     public function __construct(array $options = array())
     {
@@ -50,11 +51,15 @@ abstract class SearchCollectionAbstract
 
     /**
      * Hook that allows the collection object to initialize itself.
+     *
+     * This is most often implemented to instantiate or set a backend specific
+     * class.
      */
     abstract public function init();
 
     /**
-     * Returns an object containing the items enqueued for indexed.
+     * Returns an object containing the items in the collection that are
+     * enqueued for indexing.
      *
      * In this instance, a queue is simply a collection that can be iterated
      * over using `foreach()`. Items in the queue could be a unique identifier
@@ -79,7 +84,8 @@ abstract class SearchCollectionAbstract
     abstract public function buildDocument(SearchIndexDocument $document, $data);
 
     /**
-     * Loads the source data, defaults to returning the item passed to it.
+     * Loads the source data, defaults to returning the enqueued item passed to
+     * it.
      *
      * This method is useful for lazy-loading the source data given a unique
      * identifier. For example, when loading data from a CMS, the item will
@@ -98,10 +104,10 @@ abstract class SearchCollectionAbstract
     }
 
     /**
-     * Sets or resets a configuration option.
+     * Sets or overrides a configuration option.
      *
      * @param string $option
-     *   The name of the configuration option.
+     *   The unique name of the configuration option.
      * @param mixed $value
      *   The configuration option's value.
      *
@@ -140,15 +146,40 @@ abstract class SearchCollectionAbstract
     }
 
     /**
-     * Indexes items in a collection that are queued for indexing.
+     * Processes the items in this collection that are enqueued for indexing.
      *
+     * @param SearchServerAbstract $server
+     *   The search server that is indexing the collection.
      * @param int $limit
      *   The maximum number of documents to process. Defaults to -1, which
-     *   mean there is no limit on the number of documents processed.
+     *   means there is no limit on the number of documents processed.
      */
     public function index(SearchServerAbstract $server, $limit = SearchCollectionQueue::NO_LIMIT)
     {
         $queue = $this->getQueue($limit);
-        $queue->processQueue($server, $this, $limit);
+        $dispatcher = $server->getDispatcher();
+
+        $queue_event = new SearchQueueEvent($server, $this, $queue);
+        $dispatcher->dispatch(SearchEvents::QUEUE_PRE_PROCESS, $queue_event);
+
+        // Iterate over items enqueued for indexing.
+        foreach ($queue as $item) {
+
+            // Get the document object and load the source data.
+            $document = $server->getDocument();
+            $data = $this->loadSourceData($item);
+
+            // Allow the collection to populate the docuemnt with fields.
+            $this->buildDocument($document, $data);
+
+            // Instantiate and throw document related events, allow the backend
+            // to process the document enqueued for indexing.
+            $document_event = new SearchDocumentEvent($server, $document, $data);
+            $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
+            $server->indexDocument($document);
+            $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
+        }
+
+        $dispatcher->dispatch(SearchEvents::QUEUE_PRE_PROCESS, $queue_event);
     }
 }

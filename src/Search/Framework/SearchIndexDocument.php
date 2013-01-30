@@ -6,30 +6,28 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Framework\Index\Solarium;
+namespace Search\Framework;
 
-use Search\Framework\Event\SearchEvents;
 use Search\Framework\Event\SearchFieldEvent;
-use Search\Framework\Index\SearchIndexField;
-use Search\Framework\Server\SearchServerAbstract;
 
 /**
  * Models a document containing the source data being indexed.
  *
  * This class is usually extended by the backend in order to provide backend
- * specific functionality such as document level boosting.
+ * specific functionality, for example document level boosting for Lucene-based
+ * backends.
  */
 class SearchIndexDocument implements \IteratorAggregate
 {
     /**
-     * An array of SearchIndexFields attached to this document.
+     * An array of SearchIndexFields objects attached to this document.
      *
      * @var array
      */
     protected $_fields = array();
 
     /**
-     * The server that this document is being prepared to index to.
+     * The server that is indexing this document.
      *
      * @var SearchServerAbstract
      */
@@ -39,7 +37,7 @@ class SearchIndexDocument implements \IteratorAggregate
      * Constructs a SearchIndexDocument object.
      *
      * @param SearchServerAbstract $server
-     *   The server that this document is being prepared to index to.
+     *   The server that is indexing this document.
      */
     public function __construct(SearchServerAbstract $server)
     {
@@ -48,6 +46,11 @@ class SearchIndexDocument implements \IteratorAggregate
 
     /**
      * Implements \IteratorAggregate::getIterator().
+     *
+     * Returns an object that iterates over the fields that are attached to this
+     * document. The keys are the unique identifier of the field, and the values
+     * are the field's normalized value(s) that are returned by the
+     * SearchIndexDocument::getNormalizedFieldValue() method.
      *
      * @returns SearchIndexFieldIterator
      */
@@ -59,7 +62,7 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Returns the server that this document is being prepared for indexing to.
+     * Returns the server that is indexing this document.
      *
      * @return SearchServerAbstract
      */
@@ -72,7 +75,7 @@ class SearchIndexDocument implements \IteratorAggregate
      * Adds a field to the document.
      *
      * This method throws the SearchEvents::FIELD_ENRICH event and stores the
-     * enriched value.
+     * enriched value as the field's value.
      *
      * @param SearchIndexField $field
      *   The field being added to this document.
@@ -102,8 +105,6 @@ class SearchIndexDocument implements \IteratorAggregate
      * @return SearchIndexField
      *
      * @throws \InvalidArgumentException
-     *
-     * @todo Should we really throw an Exception?
      */
     public function getField($id)
     {
@@ -114,9 +115,12 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Returns the list of fields attached to this document.
+     * Returns all fields attached to this document.
      *
      * @return array
+     *   An associative array keyed by the unique identifier of the field to the
+     *   corresponding SearchIndexDocument object.
+     *
      */
     public function getFields()
     {
@@ -124,7 +128,8 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Checks whether a field is attached to this document.
+     * Checks whether a field is attached to this document given it's unique
+     * identifier.
      *
      * @param string $id
      *   The unique identifier of the field being checked.
@@ -137,7 +142,7 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Removes a field to the document.
+     * Removes a field to the document given it's unique identifier.
      *
      * @param string $name
      *   The unique identifier of the field being removed from the document.
@@ -151,7 +156,8 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Returns the name of the field as it is stored in the index.
+     * Returns the name of the field as it is stored in the index given it's
+     * unique identifier.
      *
      * @param string $id
      *   The unique identifier of the field.
@@ -164,14 +170,13 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Returns a normalized field value.
+     * Returns a field's normalized value.
      *
      * This method throws the SearchEvents::FIELD_NORMALIZE event and returns
      * the normalized value from the event object.
      *
      * @param string $id
-     *   The unique identifier of the field that its name as stored in the index
-     *   defaults to.
+     *   The unique identifier of the field.
      *
      * @return string|array
      *   The field's normalized value(s).
@@ -190,10 +195,9 @@ class SearchIndexDocument implements \IteratorAggregate
      * Instiantiates and adds a field to this document.
      *
      * @param string $id
-     *   The unique identifier of the field that its name as stored in the index
-     *   defaults to.
+     *   The unique identifier of the field that its index name defaults to.
      * @param string|array $value
-     *   The field's value extracted form the source text.
+     *   The field's raw value extracted form the source text.
      */
     public function __set($id, $value)
     {
@@ -202,7 +206,7 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Returns a field's normalized value that is attached to this document.
+     * Returns a field's normalized value.
      *
      * @see SearchIndexDocument::getNormalizedFieldValue()
      */

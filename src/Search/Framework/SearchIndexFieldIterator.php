@@ -6,12 +6,14 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Framework\Index;
-
-use Search\Framework\Index\SearchIndexDocument;
+namespace Search\Framework;
 
 /**
- * Models a field in the source data being indexed.
+ * Iterates over the fields attached to passed docuemnt.
+ *
+ * The keys are the unique identifier of the field, and the values are the
+ * field's normalized value(s) that are returned by the
+ * SearchIndexDocument::getNormalizedFieldValue() method.
  */
 class SearchIndexFieldIterator extends \ArrayIterator
 {
@@ -27,7 +29,7 @@ class SearchIndexFieldIterator extends \ArrayIterator
      *
      * @param SearchIndexDocument $document
      */
-    public function setDocument($document)
+    public function setDocument(SearchIndexDocument $document)
     {
         $this->_document = $document;
         return $this;
@@ -49,6 +51,8 @@ class SearchIndexFieldIterator extends \ArrayIterator
      * Returns the field's normalized value instead of the field itself.
      *
      * @return string|array
+     *
+     * @see SearchIndexDocument::getNormalizedFieldValue()
      */
     public function current()
     {

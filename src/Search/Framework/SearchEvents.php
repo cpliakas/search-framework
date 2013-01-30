@@ -6,10 +6,10 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Framework\Event;
+namespace Search\Framework;
 
 /**
- * A list of events thrown by the Search Framework library.
+ * Events thrown by the Search Framework library.
  */
 class SearchEvents
 {

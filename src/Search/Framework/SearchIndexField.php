@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Framework\Index;
+namespace Search\Framework;
 
 /**
  * Models a field in the source data being indexed.
@@ -14,8 +14,7 @@ namespace Search\Framework\Index;
 class SearchIndexField
 {
     /**
-     * The unique identifier of the field that its name as stored in the index
-     * defaults to.
+     * The unique identifier of the field.
      *
      * @var string
      */
@@ -42,16 +41,18 @@ class SearchIndexField
      * Constructs a SearchIndexField object.
      *
      * @param string $id
-     *   The unique identifier of the field that its name as stored in the index
-     *   defaults to.
+     *   The unique identifier of the field that the index name defaults to.
      * @param string|array $value
      *   The field's value extracted form the source text.
+     * @param string|null $name
+     *   The name of this field as stored in the index, defaults to null which
+     *   uses the unique identifier.
      */
-    public function __construct($id, $value)
+    public function __construct($id, $value, $name = null)
     {
         $this->_id = $id;
-        $this->_name = $id;
         $this->_value = $value;
+        $this->_name (null === $name) ? $id : $name;
     }
 
     /**

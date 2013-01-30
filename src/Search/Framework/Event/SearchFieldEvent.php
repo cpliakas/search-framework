@@ -8,8 +8,8 @@
 
 namespace Search\Framework\Event;
 
-use Search\Framework\Index\SearchIndexField;
-use Search\Framework\Server\SearchServerAbstract;
+use Search\Framework\SearchIndexField;
+use Search\Framework\SearchServerAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -18,14 +18,15 @@ use Symfony\Component\EventDispatcher\Event;
 class SearchFieldEvent extends Event
 {
     /**
-     * The server that the field is being prepared for indexing to.
+     * The search server that is indexing the document that this field is
+     * attached to.
      *
      * @var SearchServerAbstract
      */
     protected $_server;
 
     /**
-     * The field containing the value being normalized.
+     * The field containing the value being enriched or normalized.
      *
      * @var SearchIndexField
      */
@@ -42,9 +43,10 @@ class SearchFieldEvent extends Event
      * Constructs a SearchFieldEvent object.
      *
      * @param SearchServerAbstract $server
-     *   The server that the field is being prepared for indexing to.
+     *   The search server that is indexing the document that this field is
+     *   attached to.
      * @param SearchIndexField $field
-     *   The field containing the value being normalized.
+     *   The field containing the value being enriched or normalized.
      */
     public function __construct(SearchServerAbstract $server, SearchIndexField $field)
     {
@@ -54,7 +56,8 @@ class SearchFieldEvent extends Event
     }
 
     /**
-     * Returns the server that the field is being prepared for indexing to.
+     * Returns the search server that is indexing the document that this field
+     * is attached to.
      *
      * @return SearchServerAbstract
      */
@@ -74,16 +77,6 @@ class SearchFieldEvent extends Event
     }
 
     /**
-     * Returns the value being normalized or enriched.
-     *
-     * @return string|array
-     */
-    public function getValue()
-    {
-        return $this->_value;
-    }
-
-    /**
      * Sets the value being normalized or enriched.
      *
      * @return SearchFieldEvent
@@ -92,5 +85,15 @@ class SearchFieldEvent extends Event
     {
         $this->_value = $value;
         return $this;
+    }
+
+    /**
+     * Returns the value being normalized or enriched.
+     *
+     * @return string|array
+     */
+    public function getValue()
+    {
+        return $this->_value;
     }
 }
