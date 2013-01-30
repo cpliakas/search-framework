@@ -15,7 +15,7 @@ use Search\Index\SearchIndexField;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
- *
+ * Abstract class extended by search backend libraries.
  */
 abstract class SearchServerAbstract
 {
