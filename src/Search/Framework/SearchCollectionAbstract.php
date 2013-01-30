@@ -166,7 +166,7 @@ abstract class SearchCollectionAbstract
         foreach ($queue as $item) {
 
             // Get the document object and load the source data.
-            $document = $server->getDocument();
+            $document = $server->newDocument();
             $data = $this->loadSourceData($item);
 
             // Allow the collection to populate the docuemnt with fields.

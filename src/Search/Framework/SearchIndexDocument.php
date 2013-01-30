@@ -99,17 +99,18 @@ class SearchIndexDocument implements \IteratorAggregate
     /**
      * Returns a field that is attached to this document.
      *
+     * If the field is not attached to this document, a field is attached with
+     * an empty string as it's value.
+     *
      * @param string $id
      *   The unique identifier of the field.
      *
      * @return SearchIndexField
-     *
-     * @throws \InvalidArgumentException
      */
     public function getField($id)
     {
         if (!isset($this->_fields[$id])) {
-            throw new \InvalidArgumentException('Field "' . $id . '" not attached to document.');
+            $this->$id = '';
         }
         return $this->_fields[$id];
     }
@@ -201,7 +202,7 @@ class SearchIndexDocument implements \IteratorAggregate
      */
     public function __set($id, $value)
     {
-        $field = new SearchIndexField($id, $value);
+        $field = $this->_server->newField($id, $value);
         $this->addField($field);
     }
 

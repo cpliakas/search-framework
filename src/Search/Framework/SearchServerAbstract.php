@@ -42,7 +42,7 @@ abstract class SearchServerAbstract
      *
      * @return SearchIndexDocument
      */
-    public function getDocument()
+    public function newDocument()
     {
         return new SearchIndexDocument($this);
     }
@@ -50,11 +50,19 @@ abstract class SearchServerAbstract
     /**
      * Returns a search index field object specific to the extending backend.
      *
+     * @param string $id
+     *   The unique identifier of the field that the index name defaults to.
+     * @param string|array $value
+     *   The field's value extracted form the source text.
+     * @param string|null $name
+     *   The name of this field as stored in the index, defaults to null which
+     *   uses the unique identifier.
+     *
      * @return SearchIndexField
      */
-    public function getField()
+    public function newField($id, $value, $name = null)
     {
-        return new SearchIndexField();
+        return new SearchIndexField($id, $value, $name);
     }
 
     /**

@@ -52,7 +52,7 @@ class SearchIndexField
     {
         $this->_id = $id;
         $this->_value = $value;
-        $this->_name (null === $name) ? $id : $name;
+        $this->_name = (null === $name) ? $id : $name;
     }
 
     /**
