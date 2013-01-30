@@ -356,6 +356,6 @@ abstract class SearchCollectionAbstract
             $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
         }
 
-        $dispatcher->dispatch(SearchEvents::QUEUE_PRE_PROCESS, $queue_event);
+        $dispatcher->dispatch(SearchEvents::QUEUE_POST_PROCESS, $queue_event);
     }
 }
