@@ -10,6 +10,7 @@ namespace Search\Framework;
 
 use Search\Framework\Event\SearchDocumentEvent;
 use Search\Framework\Event\SearchQueueEvent;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Adapter class extended by search collections.
@@ -20,30 +21,59 @@ use Search\Framework\Event\SearchQueueEvent;
 abstract class SearchCollectionAbstract
 {
     /**
-     * An associative array of configuration options for this collection.
-     * The options are specific to to each collection. For example, an RSS
-     * collection might provide an option that specifies the feed's URL.
+     * Statically cached configurations keyed by filepath.
      *
      * @var array
      */
-    protected $_options;
+    protected static $_config = array();
+
+    /**
+     * An associative array of configuration options for this collection.
+     *
+     * Extending classes may expose collection-specific configuration options.
+     * for example, a feed collection might define a "url" option to specify
+     * the feed being consumed.
+     *
+     * @var array
+     */
+    protected $_options = array();
+
+    /**
+     * The type of content in this collection.
+     *
+     * It is best practice to use only lowercase letters, numbers, dots (.),
+     * and underscores (_). Examples might be "feed", "database.db_name".
+     *
+     * This value identifies the collection class and should be unique across
+     * all other collection classes. Multiple instances of the same collection
+     * class are allowed to have the same type.
+     *
+     * @var string
+     */
+    protected $_type = '';
 
     /**
      * Constructs a SearchCollectionAbstract object.
      *
      * @param array $options
-     *   An associative array of configuration options. Common options available
-     *   to all collections are the following:
-     *   - dispatcher: Optionally pass an EventDispatcher object. This option is
-     *     most often used to set a global event dispatcher instantiated
-     *     somewhere else in the application.
+     *   An associative array of configuration options that override that values
+     *   read from the configuration file.
+     *
+     * @throws ParseException
      */
     public function __construct(array $options = array())
     {
         $this->_options = $options;
 
-        if (!empty($options['dispatcher'])) {
-            $this->setDispatcher($options['dispatcher']);
+        if (($config = $this->getConfig()) && $type = key($config)) {
+            $this->_options = array_merge($config[$type], $this->_options);
+            if (!empty($this->_options['type'])) {
+                $this->_options['type'] = $type;
+            }
+        }
+
+        if (!empty($this->_options['type'])) {
+            $this->_type = $this->_options['type'];
         }
 
         $this->init();
@@ -118,7 +148,135 @@ abstract class SearchCollectionAbstract
         $reflection = new \ReflectionClass($this);
         $class_dir = dirname($reflection->getFileName());
         $config_dir = $class_dir . '/../../../../';
-        return realpath($config_dir . '/.collection.yml' );
+        return realpath($config_dir . '/collection.yml' );
+    }
+
+    /**
+     * Returns the parsed configuration file.
+     *
+     * If the configuration file could not be found, an empty array is returned.
+     * An exception is thrown if the YAML file can not be parsed.
+     *
+     * @return array
+     *
+     * @throws ParseException
+     */
+    public function getConfig()
+    {
+        $config = array();
+        $config_file = $this->getConfigFile();
+        if ($config_file) {
+            if (!isset(self::$_config[$config_file])) {
+                $config = Yaml::parse($config_file);
+            } else {
+                $config = self::$_config[$config_file];
+            }
+        }
+        return $config;
+    }
+
+    /**
+     * Sets the type of content in this collection.
+     *
+     * @param string $type
+     *   The type of content in this collection.
+     *
+     * @return SearchCollectionAbstract
+     */
+    public function setType($type)
+    {
+        $this->_type = $type;
+        return $this;
+    }
+
+    /**
+     * Returns the type of content in this collection.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->_type;
+    }
+
+    /**
+     * Sets the label of this collection.
+     *
+     * @param string $name
+     *   The label of this collection.
+     *
+     * @return SearchCollectionAbstract
+     */
+    public function setLabel($label)
+    {
+        return $this->setOption('label', $label);
+    }
+
+    /**
+     * Returns the label of this collection.
+     *
+     * @return string
+     */
+    public function getLabel()
+    {
+        return $this->getOption('label', '');
+    }
+
+    /**
+     * Sets the description of this collection.
+     *
+     * @param string $name
+     *   The description of this collection.
+     *
+     * @return SearchCollectionAbstract
+     */
+    public function setDescription($description)
+    {
+        return $this->setOption('description', $description);
+    }
+
+    /**
+     * Returns the description of this collection.
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->getOption('description', '');
+    }
+
+    /**
+     * Set the collection's fields.
+     *
+     * @param array $fields
+     *   The collection's fields.
+     *
+     * @return SearchCollectionAbstract
+     */
+    public function setFields(array $fields)
+    {
+        return $this->setOption('fields', $fields);
+    }
+
+    /**
+     * Returns the collection's fields.
+     *
+     * @return string
+     */
+    public function getFields()
+    {
+        return $this->getOption('fields', array());
+    }
+
+    /**
+     * Returns the unique identifiers of all fields associated with this
+     * collection.
+     *
+     * @return array
+     */
+    public function getFieldIds()
+    {
+        return array_keys($this->getFields());
     }
 
     /**

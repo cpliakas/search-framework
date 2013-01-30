@@ -72,6 +72,18 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
+     * Instantiates and attaches a field to this document.
+     *
+     * @return SearchIndexField
+     *
+     * @see SearchServerAbstract::newField()
+     */
+    public function addNewField($id, $value, $name = null)
+    {
+        return $this->_server->newField($id, $value, $name);
+    }
+
+    /**
      * Adds a field to the document.
      *
      * This method throws the SearchEvents::FIELD_ENRICH event and stores the
