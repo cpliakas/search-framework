@@ -27,11 +27,19 @@ abstract class SearchServerAbstract
     protected $_dispatcher;
 
     /**
-     * An array of SearchCollectionAbstract objects keyed by machine name.
+     * An array of collections indexed by this server.
      *
      * @var array
      */
     protected $_collections = array();
+
+    /**
+     * Processes a document for indexing.
+     *
+     * @param SearchIndexDocument $document
+     *   The document being indexed.
+     */
+    abstract public function indexDocument(SearchIndexDocument $document);
 
     /**
      * Returns a search index document object for this backend.
@@ -83,51 +91,27 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Add or replace a collection.
+     * Associates a collection with this server.
      *
-     * @param string $name
-     *   The machine name of the collection.
      * @param SearchCollectionAbstract $collection
      *   The collection being associated with this server.
      *
      * @return SearchServerAbstract
      */
-    public function addCollection($name, SearchCollectionAbstract $collection)
+    public function addCollection(SearchCollectionAbstract $collection)
     {
-        $this->_collections[$name] = $collection;
+        $this->_collections[] = $collection;
         return $this;
     }
 
     /**
-     * Disassociates a collection form this server.
+     * Returns all collections indexed by this server.
      *
-     * @param string $name
-     *   The machine name of the collection.
-     *
-     * @return SearchServerAbstract
+     * @return array
      */
-    public function removeCollection($name)
+    public function getCollections()
     {
-        unset($this->_collections[$name]);
-        return $this;
-    }
-
-    /**
-     * Returns a collection given its machine name.
-     *
-     * @param string $name
-     *   The machine name of the collection.
-     *
-     * @return SearchCollectionAbstract
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function getCollection($name)
-    {
-        if (!isset($this->_collections[$name])) {
-            throw new \InvalidArgumentException('Collection "' . $name . '" is not associated with this server.');
-        }
-        return $this->_collections[$name];
+        return $this->_collections;
     }
 
     /**
@@ -140,7 +124,7 @@ abstract class SearchServerAbstract
      */
     public function index($limit = SearchCollectionQueue::NO_LIMIT)
     {
-        foreach ($this->_collections as $name => $collection) {
+        foreach ($this->_collections as $collection) {
             $collection->index($this, $limit);
         }
     }

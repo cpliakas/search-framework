@@ -36,7 +36,6 @@ abstract class SearchCollectionAbstract
      *   to all collections are the following:
      *   - dispatcher: Optionally pass an EventDispatcher object. This option is
      *     most often used to set a global event dispatcher.
-     *   - limit: The maximum number of documents
      */
     public function __construct(array $options = array())
     {
@@ -77,7 +76,7 @@ abstract class SearchCollectionAbstract
      * @param mixed $data
      *   The source data being indexed.
      */
-    public function buildDocument(SearchIndexDocument $document, $data);
+    abstract public function buildDocument(SearchIndexDocument $document, $data);
 
     /**
      * Loads the source data, defaults to returning the item passed to it.
