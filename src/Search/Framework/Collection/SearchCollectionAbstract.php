@@ -6,10 +6,10 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Collection;
+namespace Search\Framework\Collection;
 
-use Search\Index\SearchIndexDocument;
-use Search\Server\SearchServerAbstract;
+use Search\Framework\Index\SearchIndexDocument;
+use Search\Framework\Server\SearchServerAbstract;
 
 /**
  * Adapter for search collections.

@@ -6,12 +6,12 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Index\Solarium;
+namespace Search\Framework\Index\Solarium;
 
-use Search\Event\SearchEvents;
-use Search\Event\SearchFieldEvent;
-use Search\Index\SearchIndexField;
-use Search\Server\SearchServerAbstract;
+use Search\Framework\Event\SearchEvents;
+use Search\Framework\Event\SearchFieldEvent;
+use Search\Framework\Index\SearchIndexField;
+use Search\Framework\Server\SearchServerAbstract;
 
 /**
  * Models a document containing the source data being indexed.

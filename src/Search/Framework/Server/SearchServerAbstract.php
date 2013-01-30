@@ -6,12 +6,12 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Server;
+namespace Search\Framework\Server;
 
-use Search\Collection\SearchCollectionAbstract;
-use Search\Collection\SearchCollectionQueue;
-use Search\Index\SearchIndexDocument;
-use Search\Index\SearchIndexField;
+use Search\Framework\Collection\SearchCollectionAbstract;
+use Search\Framework\Collection\SearchCollectionQueue;
+use Search\Framework\Index\SearchIndexDocument;
+use Search\Framework\Index\SearchIndexField;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**

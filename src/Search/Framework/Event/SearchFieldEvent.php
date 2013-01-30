@@ -6,10 +6,10 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Event;
+namespace Search\Framework\Event;
 
-use Search\Index\SearchIndexField;
-use Search\Server\SearchServerAbstract;
+use Search\Framework\Index\SearchIndexField;
+use Search\Framework\Server\SearchServerAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
 /**

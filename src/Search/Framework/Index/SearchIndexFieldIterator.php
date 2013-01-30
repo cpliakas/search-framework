@@ -6,9 +6,9 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Index;
+namespace Search\Framework\Index;
 
-use Search\Index\SearchIndexDocument;
+use Search\Framework\Index\SearchIndexDocument;
 
 /**
  * Models a field in the source data being indexed.

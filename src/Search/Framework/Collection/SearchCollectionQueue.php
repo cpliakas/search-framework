@@ -6,11 +6,11 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Collection;
+namespace Search\Framework\Collection;
 
-use Search\Event\SearchDocumentEvent;
-use Search\Event\SearchEvents;
-use Search\Server\SearchServerAbstract;
+use Search\Framework\Event\SearchDocumentEvent;
+use Search\Framework\Event\SearchEvents;
+use Search\Framework\Server\SearchServerAbstract;
 
 /**
  * In this instance, a queue is simply a collection that can be iterated over
