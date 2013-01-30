@@ -32,7 +32,7 @@ class SearchFieldEvent extends Event
     protected $_field;
 
     /**
-     * The value being normalized or enhanced.
+     * The value being normalized or enriched.
      *
      * @var string|array
      */
@@ -74,7 +74,7 @@ class SearchFieldEvent extends Event
     }
 
     /**
-     * Returns the value being normalized or enhanced.
+     * Returns the value being normalized or enriched.
      *
      * @return string|array
      */
@@ -84,7 +84,7 @@ class SearchFieldEvent extends Event
     }
 
     /**
-     * Sets the value being normalized or enhanced.
+     * Sets the value being normalized or enriched.
      *
      * @return SearchFieldEvent
      */

@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-namespace Search\Index;
+namespace Search\Index\Solarium;
 
 use Search\Event\SearchEvents;
 use Search\Event\SearchFieldEvent;
@@ -48,17 +48,31 @@ class SearchIndexDocument implements \IteratorAggregate
 
     /**
      * Implements \IteratorAggregate::getIterator().
+     *
+     * @returns SearchIndexFieldIterator
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->_fields);
+        $iterator = new SearchIndexFieldIterator($this->_fields);
+        $iterator->setDocument($this);
+        return $iterator;
+    }
+
+    /**
+     * Returns the server that this document is being prepared for indexing to.
+     *
+     * @return SearchServerAbstract
+     */
+    public function getServer()
+    {
+        return $this->_server;
     }
 
     /**
      * Adds a field to the document.
      *
      * This method throws the SearchEvents::FIELD_ENRICH event and stores the
-     * enhanced value.
+     * enriched value.
      *
      * @param SearchIndexField $field
      *   The field being added to this document.
@@ -68,7 +82,7 @@ class SearchIndexDocument implements \IteratorAggregate
     public function addField(SearchIndexField $field)
     {
         // Throw the SearchEvents::FIELD_ENRICH event, reset the field's value
-        // with the enhanced value.
+        // with the enriched value.
         $event = new SearchFieldEvent($this->_server, $field);
         $this->_server->getDispatcher()->dispatch(SearchEvents::FIELD_ENRICH, $event);
         $field->setValue($event->getValue());
@@ -137,6 +151,19 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
+     * Returns the name of the field as it is stored in the index.
+     *
+     * @param string $id
+     *   The unique identifier of the field.
+     *
+     * @return string
+     */
+    public function getFieldName($id)
+    {
+        return $this->getField($id)->getName();
+    }
+
+    /**
      * Returns a normalized field value.
      *
      * This method throws the SearchEvents::FIELD_NORMALIZE event and returns
@@ -154,7 +181,7 @@ class SearchIndexDocument implements \IteratorAggregate
         $field = $this->getField($id);
 
         $event = new SearchFieldEvent($this->_server, $field);
-        $this->_server->getDispatcher()->dispatch(SearchEvents::FIELD_ENRICH, $event);
+        $this->_server->getDispatcher()->dispatch(SearchEvents::FIELD_NORMALIZE, $event);
 
         return $event->getValue();
     }
