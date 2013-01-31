@@ -6,8 +6,8 @@ across search backend libraries.
 
 Its purpose is to provide common nomenclature and concepts to facilitate code
 reuse when building search enabled applications. The following example
-demonstrates how a collection of source data can be indexed using the Search
-Framework library.
+demonstrates how a collection of source data can be indexed and searched using
+the Search Framework library.
 
 Usage
 =====
@@ -34,5 +34,12 @@ $solr->addCollection($drupal_planet);
 
 // Index the feeds into Solr.
 $solr->index();
+
+// Solr generally has an indexing delay, but after the documents are committed
+// then search the collection.
+$solr->search('drupal');
+
+// Wipe the index.
+$solr->delete();
 
 ```
