@@ -18,7 +18,7 @@ class SearchEvents
      *
      * @var string
      */
-    const QUEUE_PRE_PROCESS = 'search.queue.pre_process';
+    const COLLECTION_PRE_INDEX = 'search.collection.pre_index';
 
     /**
      * Event thrown after a field is extracted from the source data and added to
@@ -63,5 +63,5 @@ class SearchEvents
      *
      * @var string
      */
-    const QUEUE_POST_PROCESS = 'search.queue.post_process';
+    const COLLECTION_POST_INDEX = 'search.collection.post_index';
 }

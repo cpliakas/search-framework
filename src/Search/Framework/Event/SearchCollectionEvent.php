@@ -14,9 +14,9 @@ use Search\Framework\SearchCollectionQueue;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Event object for collection queue related events.
+ * Event object for collection related events.
  */
-class SearchQueueEvent extends Event
+class SearchCollectionEvent extends Event
 {
     /**
      * The search server that is indexing the collection.
@@ -40,7 +40,7 @@ class SearchQueueEvent extends Event
     protected $_queue;
 
     /**
-     * Constructs a SearchQueueEvent object.
+     * Constructs a SearchCollectionEvent object.
      *
      * @param SearchServerAbstract $server
      *   The search server that is indexing the collection.

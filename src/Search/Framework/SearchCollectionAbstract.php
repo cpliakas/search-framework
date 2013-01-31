@@ -9,7 +9,7 @@
 namespace Search\Framework;
 
 use Search\Framework\Event\SearchDocumentEvent;
-use Search\Framework\Event\SearchQueueEvent;
+use Search\Framework\Event\SearchCollectionEvent;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -335,8 +335,8 @@ abstract class SearchCollectionAbstract
         $queue = $this->getQueue($limit);
         $dispatcher = $server->getDispatcher();
 
-        $queue_event = new SearchQueueEvent($server, $this, $queue);
-        $dispatcher->dispatch(SearchEvents::QUEUE_PRE_PROCESS, $queue_event);
+        $collection_event = new SearchCollectionEvent($server, $this, $queue);
+        $dispatcher->dispatch(SearchEvents::COLLECTION_PRE_INDEX, $collection_event);
 
         // Iterate over items enqueued for indexing.
         foreach ($queue as $item) {
@@ -356,6 +356,6 @@ abstract class SearchCollectionAbstract
             $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
         }
 
-        $dispatcher->dispatch(SearchEvents::QUEUE_POST_PROCESS, $queue_event);
+        $dispatcher->dispatch(SearchEvents::COLLECTION_POST_INDEX, $collection_event);
     }
 }
