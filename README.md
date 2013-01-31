@@ -43,3 +43,26 @@ $solr->search('drupal');
 $solr->delete();
 
 ```
+
+How about indexing the data into Elasticsearch? Modify the example above
+slightly to use the library that integrates with the Elastica project.
+
+```php
+
+// @see https://github.com/cpliakas/elastica-search-server
+use Search\Server\Elastica\ElasticaSearchServer;
+
+// Associate the collection with the Elastic Search server.
+// $options = array(...); @see http://ruflin.github.com/Elastica/#section-connect
+$elasticsearch = new ElasticaSearchServer($options);
+$elasticsearch->addCollection($drupal_planet);
+
+// Once you have created the index and mappings, index the content.
+elasticsearch->index();
+
+// When the documents are committed, execute a search.
+$elasticsearch->search('drupal');
+
+// Delete the index.
+elasticsearch->delete();
+```
