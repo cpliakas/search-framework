@@ -28,7 +28,7 @@ $drupal_planet = new FeedCollection();
 $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
 
 // Associate the collection with the Solr server.
-// $options = array(...);
+// $options = array(...); @see http://wiki.solarium-project.org/index.php/V3:Basic_usage
 $solr = new SolariumSearchServer($options);
 $solr->addCollection($drupal_planet);
 
