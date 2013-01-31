@@ -30,19 +30,6 @@ abstract class SearchServerAbstract
     protected $_collections = array();
 
     /**
-     * Processes a document for indexing.
-     *
-     * @param SearchIndexDocument $document
-     *   The document being indexed.
-     */
-    abstract public function indexDocument(SearchIndexDocument $document);
-
-    /**
-     * Deletes all indexed data on the search server.
-     */
-    abstract public function delete();
-
-    /**
      * Returns a search index document object specific to the extending backend.
      *
      * @return SearchIndexDocument
@@ -139,4 +126,33 @@ abstract class SearchServerAbstract
             $collection->index($this, $limit);
         }
     }
+
+    /**
+     * Processes a document for indexing.
+     *
+     * @param SearchIndexDocument $document
+     *   The document being indexed.
+     */
+    abstract public function indexDocument(SearchIndexDocument $document);
+
+    /**
+     * Executes a search against the backend.
+     *
+     * @param string $keywords
+     *   The raw keyowrds usually passed by a user through a search form.
+     * @param array $options
+     *   An associative array of backend-specific options.
+     *
+     * @return mixed
+     *   The backend specific result.
+     */
+    abstract public function search($keywords, array $options = array());
+
+    /**
+     * Deletes all indexed data on the search server.
+     *
+     * @return mixed
+     *   The backend's native response object.
+     */
+    abstract public function delete();
 }
