@@ -38,6 +38,11 @@ abstract class SearchServerAbstract
     abstract public function indexDocument(SearchIndexDocument $document);
 
     /**
+     * Deletes all indexed data on the search server.
+     */
+    abstract public function delete();
+
+    /**
      * Returns a search index document object specific to the extending backend.
      *
      * @return SearchIndexDocument
