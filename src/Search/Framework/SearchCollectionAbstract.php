@@ -88,21 +88,16 @@ abstract class SearchCollectionAbstract
     {
         $this->_options = $options;
 
-        if (($config = $this->getConfig()) && $type = key($config)) {
-            $this->_options = array_merge($config[$type], $this->_options);
-            if (!empty($this->_options['type'])) {
-                $this->_options['type'] = $type;
-            }
+        if ($config = $this->getConfig()) {
+            $this->_options = array_merge($config, $this->_options);
         }
 
-        if (!empty($this->_options['type'])) {
+        if (isset($this->_options['type'])) {
             $this->_type = $this->_options['type'];
         }
 
         $schema_options = !empty($this->_options['schema']) ? $this->_options['schema'] : array();
         $this->_schema = new SearchCollectionSchema($schema_options);
-
-        var_dump($this->_schema);
 
         $this->init();
     }
@@ -162,6 +157,20 @@ abstract class SearchCollectionAbstract
     }
 
     /**
+     * Returns the directory of the class.
+     *
+     * If this base class is overridden, the method  should get the directory of
+     * the overriding class which is why we cannot use __DIR__.
+     *
+     * @return string
+     */
+    public function getClassDir()
+    {
+        $reflection = new \ReflectionClass($this);
+        return dirname($reflection->getFileName());
+    }
+
+    /**
      * Returns the path to the .collection.yml file.
      *
      * The method assumes that the follwing directory structure is used:
@@ -173,9 +182,7 @@ abstract class SearchCollectionAbstract
      */
     public function getConfigFile()
     {
-        $reflection = new \ReflectionClass($this);
-        $class_dir = dirname($reflection->getFileName());
-        $config_dir = $class_dir . '/../../../../conf/collection';
+        $config_dir = $this->getClassDir() . '/../../../../conf/collection';
         return realpath($config_dir . '/' . self::id() . '.yml' );
     }
 
