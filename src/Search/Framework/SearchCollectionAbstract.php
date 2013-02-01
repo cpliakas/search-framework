@@ -339,7 +339,7 @@ abstract class SearchCollectionAbstract
             // to process the document enqueued for indexing.
             $document_event = new SearchDocumentEvent($server, $document, $data);
             $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
-            $server->indexDocument($document);
+            $server->indexDocument($this, $document);
             $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
         }
 

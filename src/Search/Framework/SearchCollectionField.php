@@ -268,4 +268,21 @@ class SearchCollectionField
         $this->_isMultiValued = $multivalue;
         return $this;
     }
+
+    /**
+     * Returns the array of field options.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return array(
+            'name' => $this->_name,
+            'label' => $this->_label,
+            'description' => $this->_description,
+            'store' => $this->_isStored,
+            'index' => $this->_isIndexd,
+            'multivalue' => $this->_isMultiValued,
+        );
+    }
 }

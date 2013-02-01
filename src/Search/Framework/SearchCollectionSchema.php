@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  * Models the schema from the field definitions in the collection.yml file.
  */
-class SearchCollectionSchema
+class SearchCollectionSchema implements \IteratorAggregate
 {
     /**
      * An associative array of fields keyed by their unique identifier.
@@ -64,6 +64,16 @@ class SearchCollectionSchema
     }
 
     /**
+     * Implements IteratorAggregate::getIterator().
+     *
+     * Returns the array of fields.
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->_fields);
+    }
+
+    /**
      * Associates a field with this schema.
      *
      * @param SearchCollectionField $field
@@ -97,6 +107,16 @@ class SearchCollectionSchema
             throw new \InvalidArgumentException($message);
         }
         return $this->_fields[$id];
+    }
+
+    /**
+     * Returns all fields associated with this schema.
+     *
+     * @return array
+     */
+    public function getFields()
+    {
+        return $this->_fields;
     }
 
     /**
@@ -179,5 +199,22 @@ class SearchCollectionSchema
     public function getFieldNames()
     {
         return array_keys($this->_fieldNameMap);
+    }
+
+    /**
+     * Returns the array of schema options.
+     *
+     * @return
+     */
+    public function toArray()
+    {
+        $schema_options = array(
+            'unique_field' => $this->_uniqueField,
+            'fields' => array(),
+        );
+        foreach ($this->_fields as $id => $field) {
+            $schema_options['fields'][$id] = $field->toArray();
+        }
+        return $schema_options;
     }
 }
