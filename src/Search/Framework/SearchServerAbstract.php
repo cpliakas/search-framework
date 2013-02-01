@@ -8,6 +8,7 @@
 
 namespace Search\Framework;
 
+use Search\Framework\Event\SearchSchemaEvent;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
@@ -28,6 +29,13 @@ abstract class SearchServerAbstract
      * @var array
      */
     protected $_collections = array();
+
+    /**
+     * The merged schema of all collections associated with this search server.
+     *
+     * @var SearchCollectionSchema
+     */
+    protected $_schema;
 
     /**
      * Returns a search index document object specific to the extending backend.
@@ -89,6 +97,8 @@ abstract class SearchServerAbstract
     /**
      * Associates a collection with this search server.
      *
+     * Resets the cached schema object.
+     *
      * @param SearchCollectionAbstract $collection
      *   The collection being associated with this search server.
      *
@@ -96,6 +106,7 @@ abstract class SearchServerAbstract
      */
     public function addCollection(SearchCollectionAbstract $collection)
     {
+        $this->_schema = null;
         $this->_collections[] = $collection;
         return $this;
     }
@@ -114,38 +125,48 @@ abstract class SearchServerAbstract
      * Returns the merged schema for all collections associated with this search
      * server.
      *
-     * @throws \RuntimeException
+     * @throws \InvalidArgumentException
      */
     public function getSchema()
     {
-        $schema_options = array();
-        foreach ($this->_collections as $collection) {
-            $cur_options = $collection->getSchema()->toArray();
+        if (!$this->_schema) {
 
-            // Just set the schema options on the first pass.
-            if (!$schema_options) {
-                $schema_options = $cur_options;
-                continue;
-            }
+            $schema_options = array();
+            foreach ($this->_collections as $collection) {
 
-            // The unique field must be the same across collections.
-            if ($cur_options['unique_field'] != $schema_options['unique_field']) {
-                $message = 'Collections must have the same unique field.';
-                throw new \InvalidArgumentException($message);
-            }
+                // Loads the schema and throws the SearchEvents::SCHEMA_ALTER event.
+                $schema = clone $collection->getSchema();
+                $event = new SearchSchemaEvent($this, $collection, $schema);
+                $this->_dispatcher->dispatch(SearchEvents::SCHEMA_ALTER, $event);
+                $cur_options = $schema->toArray();
 
-            // Define the field or check for field incompatibilities.
-            foreach ($cur_options['fields'] as $field_id => $field_options) {
-                if (!isset($schema_options['fields'][$field_id])) {
-                    $schema_options['fields'][$field_id] = $field_options;
-                } elseif ($schema_options['fields'][$field_id] != $field_options) {
-                    $message = 'Field definitions for "'. $field_id . '"must match.';
+                // Just set the schema options on the first pass.
+                if (!$schema_options) {
+                    $schema_options = $cur_options;
+                    continue;
+                }
+
+                // The unique field must be the same across collections.
+                if ($cur_options['unique_field'] != $schema_options['unique_field']) {
+                    $message = 'Collections must have the same unique field.';
                     throw new \InvalidArgumentException($message);
                 }
+
+                // Define the field or check for field incompatibilities.
+                foreach ($cur_options['fields'] as $field_id => $field_options) {
+                    if (!isset($schema_options['fields'][$field_id])) {
+                        $schema_options['fields'][$field_id] = $field_options;
+                    } elseif ($schema_options['fields'][$field_id] != $field_options) {
+                        $message = 'Field definitions for "'. $field_id . '"must match.';
+                        throw new \InvalidArgumentException($message);
+                    }
+                }
             }
+
+            $this->_schema = new SearchCollectionSchema($schema_options);
         }
 
-        return new SearchCollectionSchema($schema_options);
+        return $this->_schema;
     }
 
     /**

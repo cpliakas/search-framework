@@ -14,6 +14,15 @@ namespace Search\Framework;
 class SearchEvents
 {
     /**
+     * Event thrown that allows for the altering of each collection's schema
+     * prior to searching and indexing.
+     *
+     * This is most often implemented in order to reconcile the differences
+     * between incompatible schema.
+     */
+    const SCHEMA_ALTER = 'search.schema.alter';
+
+    /**
      * Event thrown prior to processing a collection's queue.
      *
      * @var string

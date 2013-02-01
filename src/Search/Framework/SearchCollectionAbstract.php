@@ -73,7 +73,7 @@ abstract class SearchCollectionAbstract
      *
      * @var SearchCollectionSchema
      */
-    protected $_schema = '';
+    protected $_schema;
 
     /**
      * Constructs a SearchCollectionAbstract object.

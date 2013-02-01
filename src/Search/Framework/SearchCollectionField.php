@@ -112,16 +112,32 @@ class SearchCollectionField
     }
 
     /**
-     * Sets the unique identifier of the field.
+     * Resets the unique identifier of the field.
      *
+     * The schema is required so that its internal hash table can be updated to
+     * reflect the field's new identifier.
+     *
+     * @param SearchCollectionSchema $schema
+     *   The schema that this field is attached to.
      * @param string $id
      *   The unique identifier of the field.
      *
      * @return SearchCollectionField
      */
-    public function setId($id)
+    public function setId(SearchCollectionSchema $schema, $id)
     {
+        $reset_unique_field = ($schema->getUniqueFieldId() === $this->_id);
+
+        // Reset the identifier, update the hash tables by re-adding the field.
+        $schema->removeField($this->_id);
         $this->_id = $id;
+        $schema->addField($this);
+
+        // Update the schema's unique field.
+        if ($reset_unique_field) {
+            $schema->setUniqueField($id);
+        }
+
         return $this;
     }
 
@@ -138,14 +154,21 @@ class SearchCollectionField
     /**
      * Sets the name of the field as stored in the index.
      *
+     * The schema is required so that its internal hash table can be updated to
+     * reflect the field's new identifier.
+     *
+     * @param SearchCollectionSchema $schema
+     *   The schema that this field is attached to.
      * @param string $name
      *   The name of the field as stored in the index.
      *
      * @return SearchCollectionField
      */
-    public function setName($name)
+    public function setName(SearchCollectionSchema $schema, $name)
     {
+        $schema->removeField($this->_id);
         $this->_name = $name;
+        $schema->addField($this);
         return $this;
     }
 

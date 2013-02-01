@@ -31,7 +31,7 @@ class SearchCollectionSchema implements \IteratorAggregate
      *
      * @var string
      */
-    protected $_uniqueField;
+    protected $_uniqueField = '';
 
     /**
      * Associative array of fields that are searched by default.
@@ -91,7 +91,7 @@ class SearchCollectionSchema implements \IteratorAggregate
     }
 
     /**
-     * Returns a field by its unique identidier.
+     * Returns a field by its unique identifier.
      *
      * @param string $id
      *   The unique identifier of the field.
@@ -170,6 +170,16 @@ class SearchCollectionSchema implements \IteratorAggregate
     }
 
     /**
+     * Returns true if the unique field is defined.
+     *
+     * @return boolean
+     */
+    public function hasUniqueField()
+    {
+        return $this->_uniqueField !== '';
+    }
+
+    /**
      * Gets the field containing the unique identifiers of the indexed items.
      *
      * @param string $id
@@ -199,6 +209,27 @@ class SearchCollectionSchema implements \IteratorAggregate
     public function getFieldNames()
     {
         return array_keys($this->_fieldNameMap);
+    }
+
+    /**
+     * Check whether a field with the passed identifier is set.
+     *
+     * @param string $id
+     *   The unique identifier of the field.
+     */
+    public function __isset($id)
+    {
+        return isset($this->_fields[$id]);
+    }
+
+    /**
+     * Returns a field by its unique identifier.
+     *
+     * @see SearchCollectionSchema::getField()
+     */
+    public function __get($id)
+    {
+        return $this->getField($id);
     }
 
     /**
