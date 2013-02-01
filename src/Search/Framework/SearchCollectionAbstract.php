@@ -53,6 +53,14 @@ abstract class SearchCollectionAbstract
     protected $_type = '';
 
     /**
+     * The schema modeled after the field definitions in the collection.yml
+     * configuration file.
+     *
+     * @var SearchCollectionSchema
+     */
+    protected $_schema = '';
+
+    /**
      * Constructs a SearchCollectionAbstract object.
      *
      * @param array $options
@@ -75,6 +83,9 @@ abstract class SearchCollectionAbstract
         if (!empty($this->_options['type'])) {
             $this->_type = $this->_options['type'];
         }
+
+        $schema_options = !empty($this->_options['schema']) ? $this->_options['schema'] : array();
+        $this->_schema = new SearchCollectionSchema($schema_options);
 
         $this->init();
     }
@@ -246,37 +257,13 @@ abstract class SearchCollectionAbstract
     }
 
     /**
-     * Set the collection's fields.
+     * Returns this collection's schema.
      *
-     * @param array $fields
-     *   The collection's fields.
-     *
-     * @return SearchCollectionAbstract
+     * @return SearchCollectionSchema
      */
-    public function setFields(array $fields)
+    public function getSchema()
     {
-        return $this->setOption('fields', $fields);
-    }
-
-    /**
-     * Returns the collection's fields.
-     *
-     * @return string
-     */
-    public function getFields()
-    {
-        return $this->getOption('fields', array());
-    }
-
-    /**
-     * Returns the unique identifiers of all fields associated with this
-     * collection.
-     *
-     * @return array
-     */
-    public function getFieldIds()
-    {
-        return array_keys($this->getFields());
+        return $this->_schema;
     }
 
     /**

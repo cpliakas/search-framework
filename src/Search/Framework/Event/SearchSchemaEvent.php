@@ -9,14 +9,14 @@
 namespace Search\Framework\Event;
 
 use Search\Framework\SearchCollectionAbstract;
-use Search\Framework\SearchCollectionQueue;
+use Search\Framework\SearchCollectionSchema;
 use Search\Framework\SearchServerAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Event object for collection related events.
+ * Event object for schema related events.
  */
-class SearchCollectionEvent extends Event
+class SearchSchemaEvent extends Event
 {
     /**
      * The search server that is indexing the collection.
@@ -26,34 +26,34 @@ class SearchCollectionEvent extends Event
     protected $_server;
 
     /**
-     * The collection being indexed by the search server.
+     * The collection that the schema is associated with.
      *
      * @var SearchCollectionAbstract
      */
     protected $_collection;
 
     /**
-     * The queue containing the items that are enqueued for indexing.
+     * The collection's schema.
      *
-     * @var SearchCollectionQueue
+     * @var SearchCollectionSchema
      */
-    protected $_queue;
+    protected $_schema;
 
     /**
-     * Constructs a SearchCollectionEvent object.
+     * Constructs a SearchSchemaEvent object.
      *
      * @param SearchServerAbstract $server
      *   The search server that is indexing the collection.
      * @param SearchCollectionAbstract $collection
-     *   The collection being indexed by the search server.
-     * @param SearchCollectionQueue $queue
-     *   The queue containing the items that are enqueued for indexing.
+     *   The collection that the schema is associated with.
+     * @param SearchCollectionSchema $schema
+     *   The collection's schema.
      */
-    public function __construct(SearchServerAbstract $server, SearchCollectionAbstract $collection, SearchCollectionQueue $queue)
+    public function __construct(SearchServerAbstract $server, SearchCollectionAbstract $collection, SearchCollectionSchema $schema)
     {
         $this->_server = $server;
         $this->_collection = $collection;
-        $this->_queue = $queue;
+        $this->_schema = $schema;
     }
 
     /**
@@ -77,12 +77,12 @@ class SearchCollectionEvent extends Event
     }
 
     /**
-     * Returns the queue containing the items that are enqueued for indexing.
+     * Returns the collection's schema.
      *
-     * @return SearchCollectionQueue
+     * @return SearchCollectionSchema
      */
-    public function getQueue()
+    public function getSchema()
     {
-        return $this->_queue;
+        return $this->_server;
     }
 }
