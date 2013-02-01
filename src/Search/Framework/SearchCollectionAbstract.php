@@ -28,6 +28,19 @@ abstract class SearchCollectionAbstract
     protected static $_config = array();
 
     /**
+     * The unique identifier of this collection.
+     *
+     * The identifier should be unique across all collection classes. It is also
+     * used to determine the name of the collectionspecific configuration file
+     * located in the `conf/collections` directory. For example, a collection
+     * with an identifier of "feed" would read the `conf/collections/feed.yml`
+     * configuration file.
+     *
+     * @var string
+     */
+    protected static $_id = '';
+
+    /**
      * An associative array of configuration options for this collection.
      *
      * Extending classes may expose collection-specific configuration options.
@@ -42,11 +55,13 @@ abstract class SearchCollectionAbstract
      * The type of content in this collection.
      *
      * It is best practice to use only lowercase letters, numbers, dots (.),
-     * and underscores (_). Examples might be "feed", "database.db_name".
+     * and underscores (_). Examples might be "feeds", "database.db_name".
      *
-     * This value identifies the collection class and should be unique across
-     * all other collection classes. Multiple instances of the same collection
-     * class are allowed to have the same type.
+     * Types can be shared by multiple collection classes, but their defined
+     * schemas should be compatible.
+     *
+     * This value is used by backends such as Elasticsearch to determine the
+     * mapping that is applied to the document being indexed.
      *
      * @var string
      */
@@ -86,6 +101,8 @@ abstract class SearchCollectionAbstract
 
         $schema_options = !empty($this->_options['schema']) ? $this->_options['schema'] : array();
         $this->_schema = new SearchCollectionSchema($schema_options);
+
+        var_dump($this->_schema);
 
         $this->init();
     }
@@ -158,8 +175,8 @@ abstract class SearchCollectionAbstract
     {
         $reflection = new \ReflectionClass($this);
         $class_dir = dirname($reflection->getFileName());
-        $config_dir = $class_dir . '/../../../../';
-        return realpath($config_dir . '/collection.yml' );
+        $config_dir = $class_dir . '/../../../../conf/collection';
+        return realpath($config_dir . '/' . self::id() . '.yml' );
     }
 
     /**
@@ -184,6 +201,16 @@ abstract class SearchCollectionAbstract
             }
         }
         return $config;
+    }
+
+    /**
+     * Returns the unqiue identifier of this collection.
+     *
+     * @return string
+     */
+    public static function id()
+    {
+        return static::$_id;
     }
 
     /**
