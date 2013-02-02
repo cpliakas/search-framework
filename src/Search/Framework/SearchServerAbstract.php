@@ -181,6 +181,8 @@ abstract class SearchServerAbstract
      */
     public function index($limit = SearchCollectionQueue::NO_LIMIT)
     {
+        // @todo Pass the schema object to the indexing function.
+        // $schema = $this->getSchema();
         foreach ($this->_collections as $collection) {
             $collection->index($this, $limit);
         }
