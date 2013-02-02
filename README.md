@@ -18,7 +18,7 @@ Usage
 
 // @see https://github.com/cpliakas/feed-collection
 use Search\Collection\Feed\FeedCollection;
-// @see https://github.com/cpliakas/solarium-search-server
+// @see https://github.com/cpliakas/solr-search-service
 use Search\Service\Solr\SolrSearchService;
 
 require 'vendor/autoload.php';
@@ -49,12 +49,12 @@ slightly to use the library that integrates with the Elasticsearch project.
 
 ```php
 
-// @see https://github.com/cpliakas/elastica-search-server
+// @see https://github.com/cpliakas/elasticsearch-service
 use Search\Service\Elasticsearch\ElasticsearchSearchService;
 
 // Associate the collection with the Elasticsearch service.
 // $options = array(...); @see http://ruflin.github.com/Elastica/#section-connect
-$elasticsearch = new ElasticsearchSearchService($options);
+$elasticsearch = new ElasticsearchService($options);
 $elasticsearch->addCollection($drupal_planet);
 
 // Once you have created the index and mappings, index the content.
