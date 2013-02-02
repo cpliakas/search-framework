@@ -14,24 +14,24 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 /**
  * Abstract class extended by search backend libraries.
  */
-abstract class SearchServerAbstract
+abstract class SearchServiceAbstract
 {
     /**
-     * The event dispatcher used by this search server to throw events.
+     * The event dispatcher used by this search service to throw events.
      *
      * @var EventDispatcher
      */
     protected $_dispatcher;
 
     /**
-     * An array of collections that are associated with this search server.
+     * An array of collections that are associated with this search service.
      *
      * @var array
      */
     protected $_collections = array();
 
     /**
-     * The merged schema of all collections associated with this search server.
+     * The merged schema of all collections associated with this search service.
      *
      * @var SearchCollectionSchema
      */
@@ -66,12 +66,12 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Sets the event dispatcher used by this search server to throw events.
+     * Sets the event dispatcher used by this search service to throw events.
      *
      * @param EventDispatcher $dispatcher
      *   The event dispatcher.
      *
-     * @return SearchServerAbstract
+     * @return SearchServiceAbstract
      */
     public function setDispatcher(EventDispatcher $dispatcher)
     {
@@ -80,7 +80,7 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Sets the event dispatcher used by this search server to throw events.
+     * Sets the event dispatcher used by this search service to throw events.
      *
      * If no event dispatcher is set, one is instantiated automatically.
      *
@@ -95,14 +95,14 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Associates a collection with this search server.
+     * Associates a collection with this search service.
      *
      * Resets the cached schema object.
      *
      * @param SearchCollectionAbstract $collection
-     *   The collection being associated with this search server.
+     *   The collection being associated with this search service.
      *
-     * @return SearchServerAbstract
+     * @return SearchServiceAbstract
      */
     public function addCollection(SearchCollectionAbstract $collection)
     {
@@ -112,7 +112,7 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Returns all collections associated with this search server.
+     * Returns all collections associated with this search service.
      *
      * @return array
      */
@@ -123,7 +123,7 @@ abstract class SearchServerAbstract
 
     /**
      * Returns the merged schema for all collections associated with this search
-     * server.
+     * service.
      *
      * @throws \InvalidArgumentException
      */
@@ -170,7 +170,7 @@ abstract class SearchServerAbstract
     }
 
     /**
-     * Iterates over all collections associated with this search server and
+     * Iterates over all collections associated with this search service and
      * processes the items enqueued for indexing.
      *
      * @param int|null $limit
@@ -222,7 +222,7 @@ abstract class SearchServerAbstract
     abstract public function search($keywords, array $options = array());
 
     /**
-     * Deletes all indexed data on the search server.
+     * Deletes all indexed data on the search service.
      *
      * @return mixed
      *   The backend's native response object.

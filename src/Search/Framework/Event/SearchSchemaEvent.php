@@ -10,7 +10,7 @@ namespace Search\Framework\Event;
 
 use Search\Framework\SearchCollectionAbstract;
 use Search\Framework\SearchCollectionSchema;
-use Search\Framework\SearchServerAbstract;
+use Search\Framework\SearchServiceAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -19,11 +19,11 @@ use Symfony\Component\EventDispatcher\Event;
 class SearchSchemaEvent extends Event
 {
     /**
-     * The search server that is indexing the collection.
+     * The search service that is indexing the collection.
      *
-     * @var SearchServerAbstract
+     * @var SearchServiceAbstract
      */
-    protected $_server;
+    protected $_service;
 
     /**
      * The collection that the schema is associated with.
@@ -42,32 +42,32 @@ class SearchSchemaEvent extends Event
     /**
      * Constructs a SearchSchemaEvent object.
      *
-     * @param SearchServerAbstract $server
-     *   The search server that is indexing the collection.
+     * @param SearchServiceAbstract $service
+     *   The search service that is indexing the collection.
      * @param SearchCollectionAbstract $collection
      *   The collection that the schema is associated with.
      * @param SearchCollectionSchema $schema
      *   The collection's schema.
      */
-    public function __construct(SearchServerAbstract $server, SearchCollectionAbstract $collection, SearchCollectionSchema $schema)
+    public function __construct(SearchServiceAbstract $service, SearchCollectionAbstract $collection, SearchCollectionSchema $schema)
     {
-        $this->_server = $server;
+        $this->_service = $service;
         $this->_collection = $collection;
         $this->_schema = $schema;
     }
 
     /**
-     * Returns the search server that is indexing the collection.
+     * Returns the search service that is indexing the collection.
      *
-     * @return SearchServerAbstract
+     * @return SearchServiceAbstract
      */
-    public function getServer()
+    public function getService()
     {
-        return $this->_server;
+        return $this->_service;
     }
 
     /**
-     * Returns the collection being indexed by the search server.
+     * Returns the collection being indexed by the search service.
      *
      * @return SearchCollectionAbstract
      */
@@ -83,6 +83,6 @@ class SearchSchemaEvent extends Event
      */
     public function getSchema()
     {
-        return $this->_server;
+        return $this->_schema;
     }
 }

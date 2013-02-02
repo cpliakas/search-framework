@@ -9,7 +9,7 @@
 namespace Search\Framework\Event;
 
 use Search\Framework\SearchIndexField;
-use Search\Framework\SearchServerAbstract;
+use Search\Framework\SearchServiceAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -18,12 +18,12 @@ use Symfony\Component\EventDispatcher\Event;
 class SearchFieldEvent extends Event
 {
     /**
-     * The search server that is indexing the document that this field is
+     * The search service that is indexing the document that this field is
      * attached to.
      *
-     * @var SearchServerAbstract
+     * @var SearchServiceAbstract
      */
-    protected $_server;
+    protected $_service;
 
     /**
      * The field containing the value being enriched or normalized.
@@ -42,28 +42,28 @@ class SearchFieldEvent extends Event
     /**
      * Constructs a SearchFieldEvent object.
      *
-     * @param SearchServerAbstract $server
-     *   The search server that is indexing the document that this field is
+     * @param SearchServiceAbstract $service
+     *   The search service that is indexing the document that this field is
      *   attached to.
      * @param SearchIndexField $field
      *   The field containing the value being enriched or normalized.
      */
-    public function __construct(SearchServerAbstract $server, SearchIndexField $field)
+    public function __construct(SearchServiceAbstract $service, SearchIndexField $field)
     {
-        $this->_server = $server;
+        $this->_service = $service;
         $this->_field = $field;
         $this->_value = $field->getValue();
     }
 
     /**
-     * Returns the search server that is indexing the document that this field
+     * Returns the search service that is indexing the document that this field
      * is attached to.
      *
-     * @return SearchServerAbstract
+     * @return SearchServiceAbstract
      */
-    public function getServer()
+    public function getService()
     {
-        return $this->_server;
+        return $this->_service;
     }
 
     /**

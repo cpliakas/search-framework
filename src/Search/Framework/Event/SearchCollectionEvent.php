@@ -10,7 +10,7 @@ namespace Search\Framework\Event;
 
 use Search\Framework\SearchCollectionAbstract;
 use Search\Framework\SearchCollectionQueue;
-use Search\Framework\SearchServerAbstract;
+use Search\Framework\SearchServiceAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -19,14 +19,14 @@ use Symfony\Component\EventDispatcher\Event;
 class SearchCollectionEvent extends Event
 {
     /**
-     * The search server that is indexing the collection.
+     * The search service that is indexing the collection.
      *
-     * @var SearchServerAbstract
+     * @var SearchServiceAbstract
      */
-    protected $_server;
+    protected $_service;
 
     /**
-     * The collection being indexed by the search server.
+     * The collection being indexed by the search service.
      *
      * @var SearchCollectionAbstract
      */
@@ -42,32 +42,32 @@ class SearchCollectionEvent extends Event
     /**
      * Constructs a SearchCollectionEvent object.
      *
-     * @param SearchServerAbstract $server
-     *   The search server that is indexing the collection.
+     * @param SearchServiceAbstract $service
+     *   The search service that is indexing the collection.
      * @param SearchCollectionAbstract $collection
-     *   The collection being indexed by the search server.
+     *   The collection being indexed by the search service.
      * @param SearchCollectionQueue $queue
      *   The queue containing the items that are enqueued for indexing.
      */
-    public function __construct(SearchServerAbstract $server, SearchCollectionAbstract $collection, SearchCollectionQueue $queue)
+    public function __construct(SearchServiceAbstract $service, SearchCollectionAbstract $collection, SearchCollectionQueue $queue)
     {
-        $this->_server = $server;
+        $this->_service = $service;
         $this->_collection = $collection;
         $this->_queue = $queue;
     }
 
     /**
-     * Returns the search server that is indexing the collection.
+     * Returns the search service that is indexing the collection.
      *
-     * @return SearchServerAbstract
+     * @return SearchServiceAbstract
      */
-    public function getServer()
+    public function getService()
     {
-        return $this->_server;
+        return $this->_service;
     }
 
     /**
-     * Returns the collection being indexed by the search server.
+     * Returns the collection being indexed by the search service.
      *
      * @return SearchCollectionAbstract
      */

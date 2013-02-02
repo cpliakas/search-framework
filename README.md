@@ -19,7 +19,7 @@ Usage
 // @see https://github.com/cpliakas/feed-collection
 use Search\Collection\Feed\FeedCollection;
 // @see https://github.com/cpliakas/solarium-search-server
-use Search\Server\Solarium\SolariumSearchServer;
+use Search\Service\Solr\SolrSearchService;
 
 require 'vendor/autoload.php';
 
@@ -29,7 +29,7 @@ $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
 
 // Associate the collection with the Solr server.
 // $options = array(...); @see http://wiki.solarium-project.org/index.php/V3:Basic_usage
-$solr = new SolariumSearchServer($options);
+$solr = new SolrSearchService($options);
 $solr->addCollection($drupal_planet);
 
 // Index the feeds into Solr.
@@ -45,16 +45,16 @@ $solr->delete();
 ```
 
 How about indexing the data into Elasticsearch? Modify the example above
-slightly to use the library that integrates with the Elastica project.
+slightly to use the library that integrates with the Elasticsearch project.
 
 ```php
 
 // @see https://github.com/cpliakas/elastica-search-server
-use Search\Server\Elastica\ElasticaSearchServer;
+use Search\Service\Elasticsearch\ElasticsearchSearchService;
 
-// Associate the collection with the Elasticsearch server.
+// Associate the collection with the Elasticsearch service.
 // $options = array(...); @see http://ruflin.github.com/Elastica/#section-connect
-$elasticsearch = new ElasticaSearchServer($options);
+$elasticsearch = new ElasticsearchSearchService($options);
 $elasticsearch->addCollection($drupal_planet);
 
 // Once you have created the index and mappings, index the content.

@@ -130,7 +130,7 @@ abstract class SearchCollectionAbstract
      * Populates the document with fields extracted from the the source data.
      *
      * @param SearchIndexDocument $document
-     *   The document object instantiated by the server.
+     *   The document object instantiated by the service.
      * @param mixed $data
      *   The source data being indexed.
      */
@@ -345,25 +345,25 @@ abstract class SearchCollectionAbstract
     /**
      * Processes the items in this collection that are enqueued for indexing.
      *
-     * @param SearchServerAbstract $server
-     *   The search server that is indexing the collection.
+     * @param SearchServiceAbstract $service
+     *   The search service that is indexing the collection.
      * @param int $limit
      *   The maximum number of documents to process. Defaults to -1, which
      *   means there is no limit on the number of documents processed.
      */
-    public function index(SearchServerAbstract $server, $limit = SearchCollectionQueue::NO_LIMIT)
+    public function index(SearchServiceAbstract $service, $limit = SearchCollectionQueue::NO_LIMIT)
     {
         $queue = $this->getQueue($limit);
-        $dispatcher = $server->getDispatcher();
+        $dispatcher = $service->getDispatcher();
 
-        $collection_event = new SearchCollectionEvent($server, $this, $queue);
+        $collection_event = new SearchCollectionEvent($service, $this, $queue);
         $dispatcher->dispatch(SearchEvents::COLLECTION_PRE_INDEX, $collection_event);
 
         // Iterate over items enqueued for indexing.
         foreach ($queue as $item) {
 
             // Get the document object and load the source data.
-            $document = $server->newDocument();
+            $document = $service->newDocument();
             $data = $this->loadSourceData($item);
 
             // Allow the collection to populate the docuemnt with fields.
@@ -371,9 +371,9 @@ abstract class SearchCollectionAbstract
 
             // Instantiate and throw document related events, allow the backend
             // to process the document enqueued for indexing.
-            $document_event = new SearchDocumentEvent($server, $document, $data);
+            $document_event = new SearchDocumentEvent($service, $document, $data);
             $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
-            $server->indexDocument($this, $document);
+            $service->indexDocument($this, $document);
             $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
         }
 

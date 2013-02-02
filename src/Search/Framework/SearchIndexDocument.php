@@ -27,21 +27,21 @@ class SearchIndexDocument implements \IteratorAggregate
     protected $_fields = array();
 
     /**
-     * The server that is indexing this document.
+     * The service that is indexing this document.
      *
-     * @var SearchServerAbstract
+     * @var SearchServiceAbstract
      */
-    protected $_server;
+    protected $_service;
 
     /**
      * Constructs a SearchIndexDocument object.
      *
-     * @param SearchServerAbstract $server
-     *   The server that is indexing this document.
+     * @param SearchServiceAbstract $service
+     *   The Service that is indexing this document.
      */
-    public function __construct(SearchServerAbstract $server)
+    public function __construct(SearchServiceAbstract $service)
     {
-        $this->_server = $server;
+        $this->_service = $service;
     }
 
     /**
@@ -62,13 +62,13 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Returns the server that is indexing this document.
+     * Returns the service that is indexing this document.
      *
-     * @return SearchServerAbstract
+     * @return SearchServiceAbstract
      */
-    public function getServer()
+    public function getService()
     {
-        return $this->_server;
+        return $this->_service;
     }
 
     /**
@@ -76,11 +76,11 @@ class SearchIndexDocument implements \IteratorAggregate
      *
      * @return SearchIndexField
      *
-     * @see SearchServerAbstract::newField()
+     * @see SearchServiceAbstract::newField()
      */
     public function addNewField($id, $value, $name = null)
     {
-        return $this->_server->newField($id, $value, $name);
+        return $this->_service->newField($id, $value, $name);
     }
 
     /**
@@ -98,8 +98,8 @@ class SearchIndexDocument implements \IteratorAggregate
     {
         // Throw the SearchEvents::FIELD_ENRICH event, reset the field's value
         // with the enriched value.
-        $event = new SearchFieldEvent($this->_server, $field);
-        $this->_server->getDispatcher()->dispatch(SearchEvents::FIELD_ENRICH, $event);
+        $event = new SearchFieldEvent($this->_service, $field);
+        $this->_service->getDispatcher()->dispatch(SearchEvents::FIELD_ENRICH, $event);
         $field->setValue($event->getValue());
 
         $id = $field->getId();
@@ -198,8 +198,8 @@ class SearchIndexDocument implements \IteratorAggregate
     {
         $field = $this->getField($id);
 
-        $event = new SearchFieldEvent($this->_server, $field);
-        $this->_server->getDispatcher()->dispatch(SearchEvents::FIELD_NORMALIZE, $event);
+        $event = new SearchFieldEvent($this->_service, $field);
+        $this->_service->getDispatcher()->dispatch(SearchEvents::FIELD_NORMALIZE, $event);
 
         return $event->getValue();
     }
@@ -214,7 +214,7 @@ class SearchIndexDocument implements \IteratorAggregate
      */
     public function __set($id, $value)
     {
-        $field = $this->_server->newField($id, $value);
+        $field = $this->_service->newField($id, $value);
         $this->addField($field);
     }
 
