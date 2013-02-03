@@ -136,7 +136,7 @@ class SearchServiceEndpoint
      * @return mixed
      *   The option's value.
      */
-    public function getOptions($option, $default = null)
+    public function getOption($option, $default = null)
     {
         return isset($this->options[$option]) ? $this->options[$option] : $default;
     }
