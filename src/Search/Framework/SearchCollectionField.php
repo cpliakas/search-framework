@@ -42,21 +42,21 @@ class SearchCollectionField
     protected $_description = '';
 
     /**
-     * Whether the field is indexed.
+     * Whether the field's data is indexed.
      *
      * @var boolean
      */
     protected $_isIndexd = true;
 
     /**
-     * Whether the source data is stored in the index.
+     * Whether the field's data is stored in the index.
      *
      * @var boolean
      */
     protected $_isStored = false;
 
     /**
-     * Whether the source data is multivalued.
+     * Whether the field's data is multivalued.
      *
      * @var boolean
      */
@@ -221,7 +221,7 @@ class SearchCollectionField
     }
 
     /**
-     * Returns whether the field is indexed.
+     * Returns whether the field's data is indexed.
      *
      * @return boolean
      */
@@ -231,10 +231,10 @@ class SearchCollectionField
     }
 
     /**
-     * Sets whether the field is indexed.
+     * Sets whether the field's data is indexed.
      *
      * @param boolean $index
-     *   A flag that determines whether the field is indexed.
+     *   A flag that determines whether the field's data is indexed.
      *
      * @return SearchCollectionField
      */
@@ -245,7 +245,7 @@ class SearchCollectionField
     }
 
     /**
-     * Returns whether the field is stored in the index.
+     * Returns whether the field's data is stored in the index.
      *
      * @return boolean
      */
@@ -255,10 +255,11 @@ class SearchCollectionField
     }
 
     /**
-     * Sets whether the field is stored in the index.
+     * Sets whether the field's data is stored in the index.
      *
      * @param boolean $store
-     *   A flag that determines whether the field is stored in the indexed.
+     *   A flag that determines whether the field's data is stored in the index,
+     *   defaults to true.
      *
      * @return SearchCollectionField
      */
@@ -269,7 +270,7 @@ class SearchCollectionField
     }
 
     /**
-     * Returns whether the source data is multivalued.
+     * Returns whether the field's data is multivalued.
      *
      * @return boolean
      */
@@ -279,10 +280,10 @@ class SearchCollectionField
     }
 
     /**
-     * Sets whether the source data is multivalued.
+     * Sets whether the field's data is multivalued.
      *
      * @param boolean $multivalue
-     *   A flag that determines whether the source data is multivalued.
+     *   A flag that determines whether the field's data is multivalued.
      *
      * @return SearchCollectionField
      */

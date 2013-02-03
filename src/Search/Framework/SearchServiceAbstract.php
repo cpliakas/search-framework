@@ -38,6 +38,53 @@ abstract class SearchServiceAbstract
     protected $_schema;
 
     /**
+     * Constructs a SearchServiceAbstract object.
+     *
+     * @param SearchServiceEndpoint|array $endpoints
+     *   The endpoint(s) that the client library will use to communicate with
+     *   the search service.
+     * @param EventDispatcher|null $dispatcher
+     *   Optionally pass a dispatcher object that was instantiated elsewhere in
+     *   the application. This is useful in cases where a global dispatcher is
+     *   being used.
+     * @param array $options
+     *   An associative array of search service specific options.
+     */
+    public function __construct($endpoints, $dispatcher = null, array $options = array())
+    {
+        if (!is_array($endpoints)) {
+            $endpoints = array($endpoints);
+        } elseif (empty($endpoints)) {
+            $message = 'Argument 1 passed to ' . __METHOD__ . ' is required.';
+            throw new \InvalidArgumentException($message);
+        }
+
+        foreach ($endpoints as $endpoint) {
+            if (!$endpoint instanceof SearchServiceEndpoint) {
+                $message = 'Argument 1 passed to ' . __METHOD__ . ' must be an array of SearchServiceEndpoint objects.';
+                throw new \InvalidArgumentException($message);
+            }
+        }
+
+        if ($dispatcher instanceof EventDispatcher) {
+            $this->_dispatcher = $dispatcher;
+        }
+
+        $this->init($endpoints, $options);
+    }
+
+    /**
+     * Hook invoked during object construction.
+     *
+     * @param array $endpoints
+     *   The endpoint(s) that the client library will use to communicate with
+     *   the search service.
+     * @param array $options
+     *   An associative array of search service specific options.
+     */
+    abstract public function init(array $endpoints, array $options);
+
+    /**
      * Returns a search index document object specific to the extending backend.
      *
      * @return SearchIndexDocument

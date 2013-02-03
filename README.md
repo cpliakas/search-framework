@@ -16,20 +16,19 @@ Usage
 
 // Indexes an RSS feed into Solr.
 
-// @see https://github.com/cpliakas/feed-collection
-use Search\Collection\Feed\FeedCollection;
-// @see https://github.com/cpliakas/solr-search-service
-use Search\Service\Solr\SolrSearchService;
+use Search\Framework\SearchServiceEndpoint;
+use Search\Collection\Feed\FeedCollection;  // @see https://github.com/cpliakas/feed-collection
+use Search\Service\Solr\SolrSearchService;  // @see https://github.com/cpliakas/solr-search-service
 
 require 'vendor/autoload.php';
 
-// Define the collection, or source data, being indexed / searched.
+// Connect to a Solr server.
+$endpoint = new SearchServiceEndpoint('local', 'http://localhost', '/solr', 8983);
+$solr = new SolrSearchService($endpoint);
+
+// Associate a collection, or source data being indexed, with the Solr service.
 $drupal_planet = new FeedCollection();
 $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
-
-// Associate the collection with the Solr server.
-// $options = array(...); @see http://wiki.solarium-project.org/index.php/V3:Basic_usage
-$solr = new SolrSearchService($options);
 $solr->addCollection($drupal_planet);
 
 // Index the feeds into Solr.
@@ -53,11 +52,14 @@ slightly to use the library that integrates with the Elasticsearch project.
 use Search\Service\Elasticsearch\ElasticsearchSearchService;
 
 // Associate the collection with the Elasticsearch service.
-// $options = array(...); @see http://ruflin.github.com/Elastica/#section-connect
-$elasticsearch = new ElasticsearchService($options);
+$endpoint = new SearchServiceEndpoint('local', 'localhost', 'feeds', 9200);
+$elasticsearch = new ElasticsearchService($endpoint);
 $elasticsearch->addCollection($drupal_planet);
 
-// Once you have created the index and mappings, index the content.
+// Create the index and put the mappings.
+$elasticsearch->createIndex();
+
+// Index the feeds into Elasticsearch.
 $elasticsearch->index();
 
 // When the documents are committed, execute a search.
