@@ -49,6 +49,8 @@ abstract class SearchServiceAbstract
      *   being used.
      * @param array $options
      *   An associative array of search service specific options.
+     *
+     * @throws \InvalidArgumentException
      */
     public function __construct($endpoints, $dispatcher = null, array $options = array())
     {
@@ -181,7 +183,7 @@ abstract class SearchServiceAbstract
             $schema_options = array();
             foreach ($this->_collections as $collection) {
 
-                // Loads the schema and throws the SearchEvents::SCHEMA_ALTER event.
+                // Loads schema and throws the SearchEvents::SCHEMA_ALTER event.
                 $schema = clone $collection->getSchema();
                 $event = new SearchSchemaEvent($this, $collection, $schema);
                 $this->_dispatcher->dispatch(SearchEvents::SCHEMA_ALTER, $event);
@@ -226,13 +228,10 @@ abstract class SearchServiceAbstract
      *
      * @see SearchCollectionAbstract::index()
      */
-    public function index($limit = SearchCollectionQueue::NO_LIMIT)
+    public function index($limit = SearchIndexer::NO_LIMIT)
     {
-        // @todo Pass the schema object to the indexing function.
-        // $schema = $this->getSchema();
-        foreach ($this->_collections as $collection) {
-            $collection->index($this, $limit);
-        }
+        $indexer = new SearchIndexer($this);
+        $indexer->indexCollections($limit);
     }
 
     /**

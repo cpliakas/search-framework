@@ -8,8 +8,6 @@
 
 namespace Search\Framework;
 
-use Search\Framework\Event\SearchDocumentEvent;
-use Search\Framework\Event\SearchCollectionEvent;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -124,7 +122,7 @@ abstract class SearchCollectionAbstract
      *
      * @return SearchCollectionQueue
      */
-    abstract public function getQueue($limit = SearchCollectionQueue::NO_LIMIT);
+    abstract public function getQueue($limit = SearchIndexer::NO_LIMIT);
 
     /**
      * Populates the document with fields extracted from the the source data.
@@ -340,43 +338,5 @@ abstract class SearchCollectionAbstract
     public function getOptions()
     {
         return $this->_options;
-    }
-
-    /**
-     * Processes the items in this collection that are enqueued for indexing.
-     *
-     * @param SearchServiceAbstract $service
-     *   The search service that is indexing the collection.
-     * @param int $limit
-     *   The maximum number of documents to process. Defaults to -1, which
-     *   means there is no limit on the number of documents processed.
-     */
-    public function index(SearchServiceAbstract $service, $limit = SearchCollectionQueue::NO_LIMIT)
-    {
-        $queue = $this->getQueue($limit);
-        $dispatcher = $service->getDispatcher();
-
-        $collection_event = new SearchCollectionEvent($service, $this, $queue);
-        $dispatcher->dispatch(SearchEvents::COLLECTION_PRE_INDEX, $collection_event);
-
-        // Iterate over items enqueued for indexing.
-        foreach ($queue as $item) {
-
-            // Get the document object and load the source data.
-            $document = $service->newDocument();
-            $data = $this->loadSourceData($item);
-
-            // Allow the collection to populate the docuemnt with fields.
-            $this->buildDocument($document, $data);
-
-            // Instantiate and throw document related events, allow the backend
-            // to process the document enqueued for indexing.
-            $document_event = new SearchDocumentEvent($service, $document, $data);
-            $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
-            $service->indexDocument($this, $document);
-            $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
-        }
-
-        $dispatcher->dispatch(SearchEvents::COLLECTION_POST_INDEX, $collection_event);
     }
 }

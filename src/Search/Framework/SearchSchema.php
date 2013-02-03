@@ -46,12 +46,15 @@ class SearchSchema implements \IteratorAggregate
      * @param array $schema_options
      *   The raw options parsed form the configuration file related to the
      *   schema.
+     *
+     * @throws \InvalidArgumentException
      */
     public function __construct(array $schema_options)
     {
         if (isset($schema_options['fields'])) {
             if (!is_array($schema_options['fields'])) {
-                throw new \InvalidArgumentException('Schema fields must be an array.');
+                $message = 'Argument 1 passed to ' . __METHOD__ . ' must be an array.';
+                throw new \InvalidArgumentException($message);
             }
             foreach ($schema_options['fields'] as $id => $field_options) {
                 $this->addField(new SearchSchemaField($id, $field_options));

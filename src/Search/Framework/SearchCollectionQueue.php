@@ -19,12 +19,6 @@ namespace Search\Framework;
 class SearchCollectionQueue implements \IteratorAggregate
 {
     /**
-     * Flags that there is no limit to the number of documents processed when
-     * running the queue.
-     */
-    const NO_LIMIT = -1;
-
-    /**
      * The items enqueued for indexing.
      *
      * @var mixed
