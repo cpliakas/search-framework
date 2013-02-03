@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  * Models a field in the collection's schema.
  */
-class SearchCollectionField
+class SearchSchemaField
 {
     /**
      * The unique identifier of the field.
@@ -63,7 +63,7 @@ class SearchCollectionField
     protected $_isMultiValued = false;
 
     /**
-     * Constructs a SearchCollectionField object.
+     * Constructs a SearchSchemaField object.
      *
      * @param string $id
      *   The unique identifier of this field. The name of the field stored in
@@ -122,7 +122,7 @@ class SearchCollectionField
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      */
     public function setId(SearchSchema $schema, $id)
     {
@@ -162,7 +162,7 @@ class SearchCollectionField
      * @param string $name
      *   The name of the field as stored in the index.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      */
     public function setName(SearchSchema $schema, $name)
     {
@@ -188,7 +188,7 @@ class SearchCollectionField
      * @param string $label
      *   The field's human readable label.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      */
     public function setLabel($label)
     {
@@ -212,7 +212,7 @@ class SearchCollectionField
      * @param string $description
      *   The field's long description.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      */
     public function setDescription($description)
     {
@@ -236,7 +236,7 @@ class SearchCollectionField
      * @param boolean $index
      *   A flag that determines whether the field's data is indexed.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      */
     public function indexData($index = true)
     {
@@ -261,7 +261,7 @@ class SearchCollectionField
      *   A flag that determines whether the field's data is stored in the index,
      *   defaults to true.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      */
     public function storeData($store = true)
     {
@@ -285,7 +285,7 @@ class SearchCollectionField
      * @param boolean $multivalue
      *   A flag that determines whether the field's data is multivalued.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      */
     public function allowMultipleValues($multivalue = true)
     {

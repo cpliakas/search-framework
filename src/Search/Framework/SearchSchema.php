@@ -54,7 +54,7 @@ class SearchSchema implements \IteratorAggregate
                 throw new \InvalidArgumentException('Schema fields must be an array.');
             }
             foreach ($schema_options['fields'] as $id => $field_options) {
-                $this->addField(new SearchCollectionField($id, $field_options));
+                $this->addField(new SearchSchemaField($id, $field_options));
             }
         }
 
@@ -76,12 +76,12 @@ class SearchSchema implements \IteratorAggregate
     /**
      * Associates a field with this schema.
      *
-     * @param SearchCollectionField $field
+     * @param SearchSchemaField $field
      *   The field being associated with the schema.
      *
      * @return SearchSchema
      */
-    public function addField(SearchCollectionField $field)
+    public function addField(SearchSchemaField $field)
     {
         $id = $field->getId();
         $name = $field->getName();
@@ -96,7 +96,7 @@ class SearchSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      *
      * @throw \InvalidArgumentException()
      */
@@ -125,7 +125,7 @@ class SearchSchema implements \IteratorAggregate
      * @param string $name
      *   The name of the field as stored in the index.
      *
-     * @return SearchCollectionField
+     * @return SearchSchemaField
      *
      * @throws \InvalidArgumentException()
      */
