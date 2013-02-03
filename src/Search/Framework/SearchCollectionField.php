@@ -63,7 +63,7 @@ class SearchCollectionField
     protected $_isMultiValued = false;
 
     /**
-     * Constructs a SearchCollectionSchema object.
+     * Constructs a SearchCollectionField object.
      *
      * @param string $id
      *   The unique identifier of this field. The name of the field stored in
@@ -117,14 +117,14 @@ class SearchCollectionField
      * The schema is required so that its internal hash table can be updated to
      * reflect the field's new identifier.
      *
-     * @param SearchCollectionSchema $schema
+     * @param SearchSchema $schema
      *   The schema that this field is attached to.
      * @param string $id
      *   The unique identifier of the field.
      *
      * @return SearchCollectionField
      */
-    public function setId(SearchCollectionSchema $schema, $id)
+    public function setId(SearchSchema $schema, $id)
     {
         $reset_unique_field = ($schema->getUniqueFieldId() === $this->_id);
 
@@ -157,14 +157,14 @@ class SearchCollectionField
      * The schema is required so that its internal hash table can be updated to
      * reflect the field's new identifier.
      *
-     * @param SearchCollectionSchema $schema
+     * @param SearchSchema $schema
      *   The schema that this field is attached to.
      * @param string $name
      *   The name of the field as stored in the index.
      *
      * @return SearchCollectionField
      */
-    public function setName(SearchCollectionSchema $schema, $name)
+    public function setName(SearchSchema $schema, $name)
     {
         $schema->removeField($this->_id);
         $this->_name = $name;

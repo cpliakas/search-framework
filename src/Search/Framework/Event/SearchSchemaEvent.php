@@ -9,7 +9,7 @@
 namespace Search\Framework\Event;
 
 use Search\Framework\SearchCollectionAbstract;
-use Search\Framework\SearchCollectionSchema;
+use Search\Framework\SearchSchema;
 use Search\Framework\SearchServiceAbstract;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -35,7 +35,7 @@ class SearchSchemaEvent extends Event
     /**
      * The collection's schema.
      *
-     * @var SearchCollectionSchema
+     * @var SearchSchema
      */
     protected $_schema;
 
@@ -46,10 +46,10 @@ class SearchSchemaEvent extends Event
      *   The search service that is indexing the collection.
      * @param SearchCollectionAbstract $collection
      *   The collection that the schema is associated with.
-     * @param SearchCollectionSchema $schema
+     * @param SearchSchema $schema
      *   The collection's schema.
      */
-    public function __construct(SearchServiceAbstract $service, SearchCollectionAbstract $collection, SearchCollectionSchema $schema)
+    public function __construct(SearchServiceAbstract $service, SearchCollectionAbstract $collection, SearchSchema $schema)
     {
         $this->_service = $service;
         $this->_collection = $collection;
@@ -79,7 +79,7 @@ class SearchSchemaEvent extends Event
     /**
      * Returns the collection's schema.
      *
-     * @return SearchCollectionSchema
+     * @return SearchSchema
      */
     public function getSchema()
     {

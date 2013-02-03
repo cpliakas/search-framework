@@ -71,7 +71,7 @@ abstract class SearchCollectionAbstract
      * The schema modeled after the field definitions in the collection.yml
      * configuration file.
      *
-     * @var SearchCollectionSchema
+     * @var SearchSchema
      */
     protected $_schema;
 
@@ -97,7 +97,7 @@ abstract class SearchCollectionAbstract
         }
 
         $schema_options = !empty($this->_options['schema']) ? $this->_options['schema'] : array();
-        $this->_schema = new SearchCollectionSchema($schema_options);
+        $this->_schema = new SearchSchema($schema_options);
 
         $this->init();
     }
@@ -293,7 +293,7 @@ abstract class SearchCollectionAbstract
     /**
      * Returns this collection's schema.
      *
-     * @return SearchCollectionSchema
+     * @return SearchSchema
      */
     public function getSchema()
     {

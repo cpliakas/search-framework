@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  * Models the schema from the field definitions in the collection.yml file.
  */
-class SearchCollectionSchema implements \IteratorAggregate
+class SearchSchema implements \IteratorAggregate
 {
     /**
      * An associative array of fields keyed by their unique identifier.
@@ -41,7 +41,7 @@ class SearchCollectionSchema implements \IteratorAggregate
     protected $_defaultFields = array();
 
     /**
-     * Constructs a SearchCollectionSchema object.
+     * Constructs a SearchSchema object.
      *
      * @param array $schema_options
      *   The raw options parsed form the configuration file related to the
@@ -79,7 +79,7 @@ class SearchCollectionSchema implements \IteratorAggregate
      * @param SearchCollectionField $field
      *   The field being associated with the schema.
      *
-     * @return SearchCollectionSchema
+     * @return SearchSchema
      */
     public function addField(SearchCollectionField $field)
     {
@@ -144,7 +144,7 @@ class SearchCollectionSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchCollectionSchema
+     * @return SearchSchema
      */
     public function removeField($id)
     {
@@ -161,7 +161,7 @@ class SearchCollectionSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchCollectionSchema
+     * @return SearchSchema
      */
     public function setUniqueField($id)
     {
@@ -185,7 +185,7 @@ class SearchCollectionSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchCollectionSchema
+     * @return SearchSchema
      */
     public function getUniqueField()
     {
@@ -225,7 +225,7 @@ class SearchCollectionSchema implements \IteratorAggregate
     /**
      * Returns a field by its unique identifier.
      *
-     * @see SearchCollectionSchema::getField()
+     * @see SearchSchema::getField()
      */
     public function __get($id)
     {

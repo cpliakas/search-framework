@@ -33,7 +33,7 @@ abstract class SearchServiceAbstract
     /**
      * The merged schema of all collections associated with this search service.
      *
-     * @var SearchCollectionSchema
+     * @var SearchSchema
      */
     protected $_schema;
 
@@ -210,7 +210,7 @@ abstract class SearchServiceAbstract
                 }
             }
 
-            $this->_schema = new SearchCollectionSchema($schema_options);
+            $this->_schema = new SearchSchema($schema_options);
         }
 
         return $this->_schema;
