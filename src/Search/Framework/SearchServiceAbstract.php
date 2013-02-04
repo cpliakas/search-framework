@@ -9,20 +9,13 @@
 namespace Search\Framework;
 
 use Search\Framework\Event\SearchSchemaEvent;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Abstract class extended by search backend libraries.
  */
-abstract class SearchServiceAbstract
+abstract class SearchServiceAbstract implements EventSubscriberInterface
 {
-    /**
-     * The event dispatcher used by this search service to throw events.
-     *
-     * @var EventDispatcher
-     */
-    protected $_dispatcher;
-
     /**
      * An array of collections that are associated with this search service.
      *
@@ -43,16 +36,12 @@ abstract class SearchServiceAbstract
      * @param SearchServiceEndpoint|array $endpoints
      *   The endpoint(s) that the client library will use to communicate with
      *   the search service.
-     * @param EventDispatcher|null $dispatcher
-     *   Optionally pass a dispatcher object that was instantiated elsewhere in
-     *   the application. This is useful in cases where a global dispatcher is
-     *   being used.
      * @param array $options
      *   An associative array of search service specific options.
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct($endpoints, $dispatcher = null, array $options = array())
+    public function __construct($endpoints, array $options = array())
     {
         if (!is_array($endpoints)) {
             $endpoints = array($endpoints);
@@ -68,11 +57,19 @@ abstract class SearchServiceAbstract
             }
         }
 
-        if ($dispatcher instanceof EventDispatcher) {
-            $this->_dispatcher = $dispatcher;
-        }
-
         $this->init($endpoints, $options);
+    }
+
+    /**
+     * Implements EventSubscriberInterface::getSubscribedEvents().
+     *
+     * The implementing search service class should override this method to
+     * register as a listener. This class is added as a subscriber by the
+     * indexer only for the duration of it's own indexing process.
+     */
+    public static function getSubscribedEvents()
+    {
+        return array();
     }
 
     /**
@@ -115,35 +112,6 @@ abstract class SearchServiceAbstract
     }
 
     /**
-     * Sets the event dispatcher used by this search service to throw events.
-     *
-     * @param EventDispatcher $dispatcher
-     *   The event dispatcher.
-     *
-     * @return SearchServiceAbstract
-     */
-    public function setDispatcher(EventDispatcher $dispatcher)
-    {
-        $this->_dispatcher = $dispatcher;
-        return $this;
-    }
-
-    /**
-     * Sets the event dispatcher used by this search service to throw events.
-     *
-     * If no event dispatcher is set, one is instantiated automatically.
-     *
-     * @return EventDispatcher
-     */
-    public function getDispatcher()
-    {
-        if (!isset($this->_dispatcher)) {
-            $this->_dispatcher = new EventDispatcher();
-        }
-        return $this->_dispatcher;
-    }
-
-    /**
      * Associates a collection with this search service.
      *
      * Resets the cached schema object.
@@ -175,6 +143,7 @@ abstract class SearchServiceAbstract
      * service.
      *
      * @throws \InvalidArgumentException
+     *   Thrown when there are schema incompatibilities.
      */
     public function getSchema()
     {

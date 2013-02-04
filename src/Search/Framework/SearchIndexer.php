@@ -60,30 +60,44 @@ class SearchIndexer
      */
     public function indexCollection(SearchCollectionAbstract $collection)
     {
-        $queue = $collection->getQueue($this->_limit);
-        $dispatcher = $this->_service->getDispatcher();
+        $dispatcher = SearchRegistry::getDispatcher();
+        $dispatcher->addSubscriber($this->_service);
 
-        $collection_event = new SearchCollectionEvent($this->_service, $collection, $queue);
-        $dispatcher->dispatch(SearchEvents::COLLECTION_PRE_INDEX, $collection_event);
+        try {
 
-        // Iterate over items enqueued for indexing.
-        foreach ($queue as $item) {
+            $queue = $collection->getQueue($this->_limit);
+            $collection_event = new SearchCollectionEvent($this->_service, $collection, $queue);
+            $dispatcher->dispatch(SearchEvents::COLLECTION_PRE_INDEX, $collection_event);
 
-            // Get the document object and load the source data.
-            $document = $this->_service->newDocument();
-            $data = $collection->loadSourceData($item);
+            // Iterate over items enqueued for indexing.
+            foreach ($queue as $item) {
 
-            // Allow the collection to populate the docuemnt with fields.
-            $collection->buildDocument($document, $data);
+                // Get the document object and load the source data.
+                $document = $this->_service->newDocument();
+                $data = $collection->loadSourceData($item);
 
-            // Instantiate and throw document related events, allow the backend
-            // to process the document enqueued for indexing.
-            $document_event = new SearchDocumentEvent($this->_service, $document, $data);
-            $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
-            $this->_service->indexDocument($collection, $document);
-            $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
+                // Allow the collection to populate the docuemnt with fields.
+                $collection->buildDocument($document, $data);
+
+                // Sandwich the indexing op with pre / post indexing events.
+                $document_event = new SearchDocumentEvent($this->_service, $document, $data);
+                $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
+                $this->_service->indexDocument($collection, $document);
+                $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
+            }
+
+            $dispatcher->dispatch(SearchEvents::COLLECTION_POST_INDEX, $collection_event);
+
+        } catch (Exception $e) {
+            // Make sure this service is removed as a subscriber. See the
+            // comment below for an explanation why.
+            $dispatcher->removeSubscriber($this->_service);
+            throw $e;
         }
 
-        $dispatcher->dispatch(SearchEvents::COLLECTION_POST_INDEX, $collection_event);
+        // The service should only listen to events throws during it's own
+        // indexing operation. Otherwie it would have to implement logic that
+        // checks whether it is the service class that is doing the indexing.
+        $dispatcher->removeSubscriber($this->_service);
     }
 }
