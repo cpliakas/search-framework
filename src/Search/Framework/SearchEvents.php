@@ -14,6 +14,14 @@ namespace Search\Framework;
 class SearchEvents
 {
     /**
+     * Event thrown prior to loading configurations from files.
+     *
+     * This is most often implemented by caching backends to prevent reading the
+     * config files on every pageload.
+     */
+    const CONFIG_LOAD = 'search.config.load';
+
+    /**
      * Event thrown that allows for the altering of each collection's schema
      * prior to searching and indexing.
      *

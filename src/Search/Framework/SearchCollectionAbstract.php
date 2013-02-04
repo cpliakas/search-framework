@@ -8,8 +8,6 @@
 
 namespace Search\Framework;
 
-use Symfony\Component\Yaml\Yaml;
-
 /**
  * Adapter class extended by search collections.
  *
@@ -19,11 +17,11 @@ use Symfony\Component\Yaml\Yaml;
 abstract class SearchCollectionAbstract
 {
     /**
-     * Statically cached configurations keyed by filepath.
+     * Object populated with the loaded configuration options.
      *
-     * @var array
+     * @var SearchConfig
      */
-    protected static $_config = array();
+    protected $_config;
 
     /**
      * The unique identifier of this collection.
@@ -37,17 +35,6 @@ abstract class SearchCollectionAbstract
      * @var string
      */
     protected static $_id = '';
-
-    /**
-     * An associative array of configuration options for this collection.
-     *
-     * Extending classes may expose collection-specific configuration options.
-     * for example, a feed collection might define a "url" option to specify
-     * the feed being consumed.
-     *
-     * @var array
-     */
-    protected $_options = array();
 
     /**
      * The type of content in this collection.
@@ -76,6 +63,9 @@ abstract class SearchCollectionAbstract
     /**
      * Constructs a SearchCollectionAbstract object.
      *
+     * Reads configuration file and instantiates the SearchSchema object from
+     * the configs loaded in the "schema" key.
+     *
      * @param array $options
      *   An associative array of configuration options that override that values
      *   read from the configuration file.
@@ -84,17 +74,14 @@ abstract class SearchCollectionAbstract
      */
     public function __construct(array $options = array())
     {
-        $this->_options = $options;
+        $this->_config = new SearchConfig($options);
+        $this->_config->load(SearchConfig::COLLECTION, $this->getConfigFile());
 
-        if ($config = $this->getConfig()) {
-            $this->_options = array_merge($config, $this->_options);
+        if ($type = $this->_config->getOption('type')) {
+            $this->_type = $type;
         }
 
-        if (isset($this->_options['type'])) {
-            $this->_type = $this->_options['type'];
-        }
-
-        $schema_options = !empty($this->_options['schema']) ? $this->_options['schema'] : array();
+        $schema_options = $this->_config->getOption('schema', array());
         $this->_schema = new SearchSchema($schema_options);
 
         $this->init();
@@ -185,30 +172,6 @@ abstract class SearchCollectionAbstract
     }
 
     /**
-     * Returns the parsed configuration file.
-     *
-     * If the configuration file could not be found, an empty array is returned.
-     * An exception is thrown if the YAML file can not be parsed.
-     *
-     * @return array
-     *
-     * @throws ParseException
-     */
-    public function getConfig()
-    {
-        $config = array();
-        $config_file = $this->getConfigFile();
-        if ($config_file) {
-            if (!isset(self::$_config[$config_file])) {
-                $config = Yaml::parse($config_file);
-            } else {
-                $config = self::$_config[$config_file];
-            }
-        }
-        return $config;
-    }
-
-    /**
      * Returns the unqiue identifier of this collection.
      *
      * @return string
@@ -252,7 +215,8 @@ abstract class SearchCollectionAbstract
      */
     public function setLabel($label)
     {
-        return $this->setOption('label', $label);
+        $this->_config->setOption('label', $label);
+        return $this;
     }
 
     /**
@@ -262,7 +226,7 @@ abstract class SearchCollectionAbstract
      */
     public function getLabel()
     {
-        return $this->getOption('label', '');
+        return $this->_config->getOption('label', '');
     }
 
     /**
@@ -275,7 +239,8 @@ abstract class SearchCollectionAbstract
      */
     public function setDescription($description)
     {
-        return $this->setOption('description', $description);
+        $this->_config->setOption('description', $description);
+        return $this;
     }
 
     /**
@@ -285,7 +250,7 @@ abstract class SearchCollectionAbstract
      */
     public function getDescription()
     {
-        return $this->getOption('description', '');
+        return $this->_config->getOption('description', '');
     }
 
     /**
@@ -296,22 +261,6 @@ abstract class SearchCollectionAbstract
     public function getSchema()
     {
         return $this->_schema;
-    }
-
-    /**
-     * Sets or overrides a configuration option.
-     *
-     * @param string $option
-     *   The unique name of the configuration option.
-     * @param mixed $value
-     *   The configuration option's value.
-     *
-     * @return SearchCollectionAbstract
-     */
-    public function setOption($option, $value)
-    {
-        $this->_options[$option] = $value;
-        return $this;
     }
 
     /**
@@ -327,16 +276,6 @@ abstract class SearchCollectionAbstract
      */
     public function getOption($option, $default = null)
     {
-        return isset($this->_options[$option]) ? $this->_options[$option] : $default;
-    }
-
-    /**
-     * Returns the associative array of configuration options.
-     *
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->_options;
+        return $this->_config->getOption($option, $default);
     }
 }
