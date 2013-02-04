@@ -14,8 +14,20 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * Abstract class extended by search backend libraries.
  */
-abstract class SearchServiceAbstract implements EventSubscriberInterface
+abstract class SearchServiceAbstract implements EventSubscriberInterface, SearchConfigurableInterface
 {
+    /**
+     * The unique identifier of the service class.
+     */
+    protected static $_id = '';
+
+    /**
+     * Object populated with configuration options set for this instance.
+     *
+     * @var SearchConfig
+     */
+    protected $_config;
+
     /**
      * An array of collections that are associated with this search service.
      *
@@ -57,6 +69,9 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface
             }
         }
 
+        $this->_config = new SearchConfig($options);
+        $this->_config->load($this);
+
         $this->init($endpoints, $options);
     }
 
@@ -64,12 +79,28 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface
      * Implements EventSubscriberInterface::getSubscribedEvents().
      *
      * The implementing search service class should override this method to
-     * register as a listener. This class is added as a subscriber by the
-     * indexer only for the duration of it's own indexing process.
+     * register itself as a subscriber. This class is added as a subscriber by
+     * the indexer only for the duration of it's own indexing process.
      */
     public static function getSubscribedEvents()
     {
         return array();
+    }
+
+    /**
+     * Implements SearchConfigurableInterface::id().
+     */
+    public function getId()
+    {
+        return static::$_id;
+    }
+
+    /**
+     * Implements SearchConfigurableInterface::getConfig().
+     */
+    public function getConfig()
+    {
+        return $this->_config;
     }
 
     /**

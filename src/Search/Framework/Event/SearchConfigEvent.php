@@ -24,27 +24,23 @@ class SearchConfigEvent extends Event
     protected $_config;
 
     /**
-     * The type of configuration being loaded.
-     *
-     * @var string
-     */
-    protected $_type;
-
-    /**
-     * The name of the config file being read.
+     * The name of the configuration file being read.
      *
      * @var string
      */
     protected $_filename;
 
     /**
-     * The directories that will be scanned for the configuration files.
+     * An array of directories that that will be scanned for the configuration
+     * file. The directories are the return array of the self::getConfigDirs()
+     * method with the mapped subdirectory appended.
      *
      * @var array
      */
     protected $_configDirs;
 
     /**
+     * The configuration options loaded from another source.
      *
      * @var array
      */
@@ -55,17 +51,16 @@ class SearchConfigEvent extends Event
      *
      * @param SearchConfig $config
      *   The config object populated with the default options.
-     * @param string $type
-     *   The type of configuration being loaded.
      * @param string $filename
-     *   The name of the config file being read.
+     *   The name of the configuration file being read.
      * @param array $config_dirs
-     *   The directories that will be scanned for the configuration files.
+     *   An array of directories that that will be scanned for the configuration
+     *   file. The directories are the return array of the self::getConfigDirs()
+     *   method with the mapped subdirectory appended.
      */
-    public function __construct(SearchConfig $config, $type, $filename, array $config_dirs)
+    public function __construct(SearchConfig $config, $filename, array $config_dirs)
     {
         $this->_config = $config;
-        $this->_type = $type;
         $this->_filename = $filename;
         $this->_configDirs = $config_dirs;
     }
@@ -78,16 +73,6 @@ class SearchConfigEvent extends Event
     public function getConfig()
     {
         return $this->_config;
-    }
-
-    /**
-     * Returns the type of configuration being loaded.
-     *
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->_type;
     }
 
     /**
@@ -114,7 +99,7 @@ class SearchConfigEvent extends Event
      * Sets the configuration options loaded from another source.
      *
      * If this method is called, then the configuration files will not be
-     * sources and the values passed to this method will be used instead.
+     * sourcesd and the array passed to this method will be used instead.
      *
      * @return SearchConfigEvent
      */

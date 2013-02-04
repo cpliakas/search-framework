@@ -14,27 +14,19 @@ namespace Search\Framework;
  * Collections are datasources that are being indexed. Examples are files on a
  * filesystem, RSS feeds, or the content in a CMS.
  */
-abstract class SearchCollectionAbstract
+abstract class SearchCollectionAbstract implements SearchConfigurableInterface
 {
     /**
-     * Object populated with the loaded configuration options.
+     * The unique identifier of the collection class.
+     */
+    protected static $_id = '';
+
+    /**
+     * Object populated with configuration options set for this instance.
      *
      * @var SearchConfig
      */
     protected $_config;
-
-    /**
-     * The unique identifier of this collection.
-     *
-     * The identifier should be unique across all collection classes. It is also
-     * used to determine the name of the collectionspecific configuration file
-     * located in the `conf/collections` directory. For example, a collection
-     * with an identifier of "feed" would read the `conf/collections/feed.yml`
-     * configuration file.
-     *
-     * @var string
-     */
-    protected static $_id = '';
 
     /**
      * The type of content in this collection.
@@ -75,7 +67,7 @@ abstract class SearchCollectionAbstract
     public function __construct(array $options = array())
     {
         $this->_config = new SearchConfig($options);
-        $this->_config->load(SearchConfig::COLLECTION, $this->getConfigFile());
+        $this->_config->load($this);
 
         if ($type = $this->_config->getOption('type')) {
             $this->_type = $type;
@@ -142,43 +134,19 @@ abstract class SearchCollectionAbstract
     }
 
     /**
-     * Returns the directory of the class.
-     *
-     * If this base class is overridden, the method  should get the directory of
-     * the overriding class which is why we cannot use __DIR__.
-     *
-     * @return string
+     * Implements SearchConfigurableInterface::getId().
      */
-    public function getClassDir()
-    {
-        $reflection = new \ReflectionClass($this);
-        return dirname($reflection->getFileName());
-    }
-
-    /**
-     * Returns the path to the .collection.yml file.
-     *
-     * The method assumes that the follwing directory structure is used:
-     * `{src-dir}/Search/Collection/{collection-name}/{collection-class}.php`
-     *
-     * @return string|false
-     *   The absolute path to the configuration file, false if the file does not
-     *   exist or could not be resolved.
-     */
-    public function getConfigFile()
-    {
-        $config_dir = $this->getClassDir() . '/../../../../conf/collection';
-        return realpath($config_dir . '/' . self::id() . '.yml' );
-    }
-
-    /**
-     * Returns the unqiue identifier of this collection.
-     *
-     * @return string
-     */
-    public static function id()
+    public function getId()
     {
         return static::$_id;
+    }
+
+    /**
+     * Implements SearchConfigurableInterface::getConfig().
+     */
+    public function getConfig()
+    {
+        return $this->_config;
     }
 
     /**
