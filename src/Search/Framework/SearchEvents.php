@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  * Events thrown by the Search Framework library.
  */
-class SearchEvents
+final class SearchEvents
 {
     /**
      * Event thrown prior to loading configurations from files.

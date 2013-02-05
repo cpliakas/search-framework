@@ -9,7 +9,7 @@
 namespace Search\Framework;
 
 /**
- * Iterates over the fields attached to passed docuemnt.
+ * Iterates over the fields attached to the passed docuemnt.
  *
  * The keys are the unique identifier of the field, and the values are the
  * field's normalized value(s) that are returned by the

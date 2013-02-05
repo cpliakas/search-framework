@@ -16,11 +16,6 @@ use Search\Framework\Event\SearchCollectionEvent;
  */
 class SearchIndexer
 {
-    /**
-     * Flags that there is no limit to the number of documents processed when
-     * indexing a collection.
-     */
-    const NO_LIMIT = -1;
 
     /**
      * The search service that is performing the indexing operation.
@@ -35,10 +30,9 @@ class SearchIndexer
      * @param SearchServiceAbstract $service
      *   The search service that is performing the indexing operation.
      */
-    public function __construct(SearchServiceAbstract $service, $limit = self::NO_LIMIT)
+    public function __construct(SearchServiceAbstract $service)
     {
         $this->_service = $service;
-        $this->_limit = $limit;
     }
 
     /**
@@ -65,7 +59,7 @@ class SearchIndexer
 
         try {
 
-            $queue = $collection->getQueue($this->_limit);
+            $queue = $collection->getQueue();
             $collection_event = new SearchCollectionEvent($this->_service, $collection, $queue);
             $dispatcher->dispatch(SearchEvents::COLLECTION_PRE_INDEX, $collection_event);
 

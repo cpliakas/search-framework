@@ -17,8 +17,11 @@ use Symfony\Component\Yaml\Yaml;
 class SearchConfig
 {
     /**
-     * An associative array of configuration options  passed to the constructor
-     * and optionally loaded from a YAML configuration file.
+     * An associative array of configuration options usually passed through the
+     * constructor and optionally loaded from a YAML configuration file.
+     *
+     * The options passed at runtime should have priority over configs loaded
+     * from files or external sources.
      *
      * @var array
      */
@@ -28,16 +31,14 @@ class SearchConfig
      * An associative array of base directories that will be scanned for
      * configuration files.
      *
-     * The configuration files will exist in subdirectories based on the
-     * SearchConfigurableInterface class. See the self::mapSubDirectory() method
-     * for the class mappings.
+     * The configuration files exist in subdirectories if the directories based
+     * on the SearchConfigurableInterface class. See the self::mapSubDirectory()
+     * method for the class mappings.
      *
      * Directories are iterated over in a FILO manner, meaning that the
      * directories at the end of the array are scanned first. This allows the
      * application to add more granular configuration directories that are
      * scanned before the generic default directory.
-     *
-     * See class constants for valid config types.
      *
      * @var array
      */
@@ -46,7 +47,7 @@ class SearchConfig
     /**
      * A static cache of parsed configuration options keyed by filename.
      *
-     * This prevetns the configuration files from being read and parsed multiple
+     * This prevents the configuration files from being read and parsed multiple
      * times on a single page load.
      *
      * @var array
@@ -56,9 +57,11 @@ class SearchConfig
     /**
      * Constructs a SearchConfig object.
      *
+     * Sets the runtime configuration options.
+     *
      * @param array $options
      *   Configuration options passed at runtime that will override any
-     *   configurations loaded via a YAML file or an external source.
+     *   configurations loaded via YAML files or an external sources.
      */
     public function __construct(array $options = array())
     {
@@ -85,7 +88,7 @@ class SearchConfig
      * Returns a configuration option's value.
      *
      * @param string $index
-     *   The name of the configuration option.
+     *   The unique name of the configuration option.
      * @param mixed $default
      *   The default value returned if the configuration option is not set,
      *   defaults to null.
@@ -114,8 +117,7 @@ class SearchConfig
      * end of the array are scanned first.
      *
      * @param array $directories
-     *   An array of directories associated with the config type that that will
-     *   be scanned for the YAML configuration files.
+     *   The directories that will be scanned for YAML configuration files.
      */
     public static function setConfigDirs(array $directories)
     {
@@ -125,14 +127,13 @@ class SearchConfig
     }
 
     /**
-     * Adds a directory that will be scanned for a YAML configuration file.
+     * Adds a directory that will be scanned for YAML configuration files.
      *
      * Directories are added in a FILO manner, meaning the directories added
      * last are scanned first.
      *
      * @param array $directory
-     *   Adds a directory to the stack that  will be scanned for the YAML
-     *   configuration files.
+     *   Adds a directory that will be scanned for YAML configuration files.
      */
     public static function addConfigDir($directory)
     {
@@ -217,11 +218,15 @@ class SearchConfig
     }
 
     /**
-     * Parses configuration options from YAML files related to the configurable
-     * object.
+     * Parses configuration options from YAML configuration files related to the
+     * configurable object.
+     *
+     * This method throws the SearchEvents::CONFIG_LOAD event. If configurations
+     * are loaded during this event, processing stops and the directories are
+     * not scanned for configuration files.
      *
      * @param SearchConfigurableInterface $configurable
-     *   The configurable object that configurations are being retrieved for.
+     *   The configurable object that configurations are being parsed for.
      *
      * @return SearchConfig
      *
@@ -261,10 +266,12 @@ class SearchConfig
     }
 
     /**
-     * Scans the directories for the configuration file and parses it.
+     * Scans the directories for configuration files and parses the first one it
+     * encounters.
      *
-     * The directories are scanned in reverse order. Once a file is found, it
-     * is parsed and returned at which point the scanning stops.
+     * The directories are scanned in the reverse order that they are passed.
+     * Once a file is found, it is parsed and returned at which point the
+     * scanning stops.
      *
      * @param string $filename
      *   The name of the YAML configuration file being scanned for.

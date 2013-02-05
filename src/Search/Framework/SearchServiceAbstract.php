@@ -18,6 +18,11 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
 {
     /**
      * The unique identifier of the service class.
+     *
+     * It is best practice to use only lowercase letters, numbers, dots (.),
+     * and underscores (_).
+     *
+     * @var string
      */
     protected static $_id = '';
 
@@ -29,7 +34,8 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     protected $_config;
 
     /**
-     * An array of collections that are associated with this search service.
+     * An array of SearchServiceCollection objects that are associated with this
+     * search service.
      *
      * @var array
      */
@@ -222,16 +228,12 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      * Iterates over all collections associated with this search service and
      * processes the items enqueued for indexing.
      *
-     * @param int|null $limit
-     *   The maximum number of items to process, defaults to null which uses the
-     *   default setting.
-     *
      * @see SearchCollectionAbstract::index()
      */
-    public function index($limit = SearchIndexer::NO_LIMIT)
+    public function index()
     {
         $indexer = new SearchIndexer($this);
-        $indexer->indexCollections($limit);
+        $indexer->indexCollections();
     }
 
     /**
