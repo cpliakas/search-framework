@@ -10,6 +10,9 @@ namespace Search\Framework;
 
 /**
  * A message sent to or fetched from the queue.
+ *
+ * This message should be extended by the queue backends to store their native
+ * message objects and implement backend specific functionality.
  */
 class SearchQueueMessage
 {
@@ -18,7 +21,7 @@ class SearchQueueMessage
      *
      * @var string
      */
-    protected $_body;
+    protected $_body = '';
 
     /**
      * A boolean flagging whether there was an error fetching the message from
@@ -29,22 +32,14 @@ class SearchQueueMessage
      *
      * @var boolean
      */
-    protected $_error;
+    protected $_error = false;
 
     /**
-     * Constructs a SearchQueueMessage object.
+     * The unique identifier of the consumed message.
      *
-     * @param string $body
-     *   The message body.
-     * @param boolean $error
-     *   Whether there was an error fetching the message from the queue,
-     *   defaults to false.
+     * @var int|string
      */
-    public function __construct($body, $error = false)
-    {
-        $this->_body = $body;
-        $this->_error = $error;
-    }
+    protected $_id;
 
     /**
      * Sets the message body.
@@ -71,7 +66,10 @@ class SearchQueueMessage
     }
 
     /**
-     * Sets the error flag.
+     * Sets the error flag for the consumed message.
+     *
+     * This flag should not be set for messages that are being published to a
+     * queue.
      *
      * @param boolean $error
      *   Whether there was an error fetching the message from the queue,
@@ -93,6 +91,34 @@ class SearchQueueMessage
     public function getError()
     {
         return $this->_error;
+    }
+
+    /**
+     * Optionally set the message's unique identifier after it is consumed from
+     * the queue.
+     *
+     * The identifier should not be set for messages that are being published to
+     * a queue.
+     *
+     * @param int|string $id
+     *   The unique identifier of the consumed message.
+     *
+     * @return SearchQueueMessage
+     */
+    public function setId($id)
+    {
+        $this->_id = $id;
+        return $this;
+    }
+
+    /**
+     * The unique identifier of the consumed message.
+     *
+     * @return int|string
+     */
+    public function getId()
+    {
+        return $this->_id;
     }
 
     /**

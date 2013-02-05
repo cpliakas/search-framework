@@ -69,7 +69,7 @@ class SearchQueueConsumerIterator implements \Iterator
      */
     public function timedOut()
     {
-        return (SearchCollectionAbstract::NO_LIMIT == $this->_timeout || $this->_timeout >= time());
+        return (SearchCollectionAbstract::NO_LIMIT == $this->_timeout || time() > $this->_timeout);
     }
 
     /**
@@ -79,7 +79,7 @@ class SearchQueueConsumerIterator implements \Iterator
      */
     public function limitExceeded()
     {
-        return (SearchCollectionAbstract::NO_LIMIT == $this->_limit || $this->_count >= $this->limit);
+        return (SearchCollectionAbstract::NO_LIMIT == $this->_limit || $this->_count > $this->_limit);
     }
 
     /**
@@ -110,7 +110,6 @@ class SearchQueueConsumerIterator implements \Iterator
         if ($this->timedOut() || $this->limitExceeded()) {
             return false;
         }
-
         $this->_currentMessage = $this->_queue->consume();
         return $this->_currentMessage !== false;
     }
@@ -122,6 +121,7 @@ class SearchQueueConsumerIterator implements \Iterator
      */
     public function current()
     {
+        $this->_queue->addConsumedMessage($this->_currentMessage);
         return $this->_currentMessage;
     }
 

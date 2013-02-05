@@ -144,17 +144,17 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     abstract public function init();
 
     /**
-     * Gets the items that are scheduled for indexing.
+     * Fetches the items that are scheduled for indexing.
      *
      * This method acts as the worker that interacts with the index scheduler to
      * retrieve the items that are scheduled for indexing. Often times the index
      * scheduler can be as simple as a backend client library querying the data
      * source to get the most recently updated items.
      *
-     * @return \Iterator
+     * @return \Traversable|array
      *   The items that are scheduled to be indexed.
      */
-    abstract public function getScheduledItems();
+    abstract public function fetchScheduledItems();
 
     /**
      * Loads the source data from the item fetched from the indexing queue.
@@ -164,8 +164,7 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
      * often be an identifier of the content being indexed.
      *
      * @param mixed $item
-     *   The item being indexed. An item is usually a unique identifier but
-     *   could also be a fully populated object containing the source data.
+     *   The item that is scheduled for indexing.
      *
      * @return mixed
      *   The source data being indexed.
@@ -176,8 +175,23 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     }
 
     /**
+     * Builds a queue message for the item scheduled for indexing.
+     *
+     * This hook is invoked just prior to sending the item to the index queue.
+     *
+     * @param SearchQueueMessage $message
+     *   The queue message being built.
+     *
+     * @param mixed $item
+     *   The item that is scheduled for indexing.
+     */
+    abstract public function buildQueueMessage(SearchQueueMessage $message, $item);
+
+    /**
      * Populates a SearchIndexDocument object with fields extracted from the the
      * source data.
+     *
+     * This hook is invoked prior to processing the document for indexing.
      *
      * @param SearchIndexDocument $document
      *   The document object instantiated by the service.
@@ -199,12 +213,12 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     /**
      * Sets the object that interacts with the indexing queue.
      *
-     * @param SearchQueueInterface $queue
-     *   The producer that enqueues the items scheduled for indexing.
+     * @param SearchQueueAbstract $queue
+     *   The object that interacts with the indexing queue.
      *
      * @return SearchCollectionAbstract
      */
-    public function setQueue(SearchQueueInterface $queue)
+    public function setQueue(SearchQueueAbstract $queue)
     {
         $this->_queue = $queue;
         return $this;
@@ -216,12 +230,12 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
      * If no queue is set, an instance of SearchIteratorQueue is set as the
      * queue class.
      *
-     * @return SearchQueueInterface
+     * @return SearchQueueAbstract
      */
     public function getQueue()
     {
         if (!$this->_queue) {
-            $this->_queue = new SearchIteratorQueue();
+            $this->_queue = new SearchQueueIteratorQueue($this, 'default');
         }
         return $this->_queue;
     }
