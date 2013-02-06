@@ -268,19 +268,52 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     abstract public function createIndex($name, array $options = array());
 
     /**
-     * Indexes all collections attached to this service.
+     * Iterates over all collections attached to this search service and queues
+     * the content scheduled for indexing. After queuing is complete, the search
+     * service processes the queue and
      */
     public function index()
     {
-
+        foreach ($this->_collections as $collection) {
+            $collection->queueScheduledItems();
+        }
+        $this->indexQueuedItems();
     }
 
     /**
-     * Indexes all queued items.
+     * Processes the queue and indexes the items in the queue.
      */
     public function indexQueuedItems()
     {
-        
+        $queue = SearchRegistry::getQueue();
+        $dispatcher = SearchRegistry::getDispatcher();
+
+        try {
+
+            // Register
+            $dispatcher->addSubscriber($this);
+
+            foreach ($queue as $message) {
+
+                $collection = $message->getCollection();
+                $document = $this->newDocument();
+                $data = $collection->loadSourceData($message);
+
+                $document_event = new SearchDocumentEvent($this->_service, $document, $data);
+                $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
+                $this->indexDocument($collection, $document);
+                $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
+            }
+
+            // The service should only listen to events throws during it's own
+            // indexing operation.
+            $dispatcher->removeSubscriber($this);
+
+        } catch (Exception $e) {
+            // Make sure this service is removed as a subscriber. See above.
+            $dispatcher->removeSubscriber($this);
+            throw $e;
+        }
     }
 
     /**
