@@ -15,11 +15,40 @@ namespace Search\Framework;
 class SearchQueueProducerIterator extends SearchQueueIteratorAbstract
 {
     /**
+     * The queue object set for the collection.
+     *
+     * @var SearchQueueAbstract
+     */
+    protected $_queue;
+
+    /**
+     *
+     * @var SearchCollectionAbstract
+     */
+    protected $_collection;
+
+    /**
      * An iterator containing the items that are scheduled for indexing.
      *
      * @var \Iterator
      */
     protected $_scheduledItems;
+
+    /**
+     * Constructs a SearchQueueIteratorAbstract object.
+     *
+     * @param SearchQueueAbstract $queue
+     *   The queue object interacting with the broker.
+     * @param SearchQueueCollection $collection
+     *   The queue object that is consuming an indexing queue.
+     */
+    public function __construct(SearchQueueAbstract $queue, SearchCollectionAbstract $collection)
+    {
+        $this->_queue = $queue;
+        $this->_collection = $collection;
+
+        $this->_timeout = $collection->getTimeout();
+    }
 
     /**
      * Overrides SearchQueueIteratorAbstract::rewind().
@@ -48,6 +77,7 @@ class SearchQueueProducerIterator extends SearchQueueIteratorAbstract
             list(, $item) = each($this->_scheduledItems);
             if ($item !== null) {
                 $message = $this->_queue->newMessage();
+                $message->setCollection($this->_collection);
                 $this->_collection->buildQueueMessage($message, $item);
                 $this->_currentMessage = $message;
                 return true;

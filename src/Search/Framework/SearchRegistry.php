@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 /**
  * A static variable registry for components that are used across classes.
  */
-class SearchRegistry extends \ArrayObject
+class SearchRegistry
 {
     /**
      * Registry key for the event dispatcher used throughout this library.
@@ -21,11 +21,23 @@ class SearchRegistry extends \ArrayObject
     const DISPATCHER = 'dispatcher';
 
     /**
+     * Registry key for the queue used throughout this library.
+     */
+    const QUEUE = 'queue';
+
+    /**
      * An instance of this class.
      *
      * @var SearchRegistry
      */
-    private static $_registry = null;
+    private static $_instance = null;
+
+    /**
+     * An associative array of registered variables.
+     *
+     * @var array
+     */
+    private static $_registry = array();
 
     /**
      * Returns a statically cached instance of this class.
@@ -34,10 +46,10 @@ class SearchRegistry extends \ArrayObject
      */
     public static function getInstance()
     {
-        if (null === self::$_registry) {
-            self::$_registry = new self(array(), parent::ARRAY_AS_PROPS);
+        if (null === self::$_instance) {
+            self::$_instance = new self();
         }
-        return self::$_registry;
+        return self::$_instance;
     }
 
     /**
@@ -53,11 +65,10 @@ class SearchRegistry extends \ArrayObject
      */
     public static function get($index)
     {
-        $registry = self::getInstance();
-        if (!$registry->offsetExists($index)) {
+        if (!isset(self::$_registry[$index])) {
             throw new \InvalidArgumentException('Variable "' . $index .'" is not registered.');
         }
-        return $registry->offsetGet($index);
+        return self::$_registry[$index];
     }
 
     /**
@@ -65,13 +76,12 @@ class SearchRegistry extends \ArrayObject
      *
      * @param string $index
      *   The name of the registered variable.
-     * @param mixed $value
+     * @param mixed &$value
      *   The value of the variable being registered.
      */
     public static function set($index, $value)
     {
-        $registry = self::getInstance();
-        $registry->offsetSet($index, $value);
+        self::$_registry[$index] = $value;
     }
 
     /**
@@ -82,8 +92,7 @@ class SearchRegistry extends \ArrayObject
      */
     public static function remove($index)
     {
-        $registry = self::getInstance();
-        $registry->offsetUnset($index);
+        unset(self::$_registry[$index]);
     }
 
     /**
@@ -93,8 +102,7 @@ class SearchRegistry extends \ArrayObject
      */
     public static function isRegistered($index)
     {
-        $registry = self::getInstance();
-        return $registry->offsetExists($index);
+        return isset(self::$_registry[$index]);
     }
 
     /**
@@ -105,7 +113,7 @@ class SearchRegistry extends \ArrayObject
      */
     public static function setDispatcher(EventDispatcher $dispatcher)
     {
-        self::set(self::DISPATCHER, $dispatcher);
+        self::$_registry[self::DISPATCHER] = $dispatcher;
     }
 
     /**
@@ -117,11 +125,33 @@ class SearchRegistry extends \ArrayObject
      */
     public static function getDispatcher()
     {
-        $registry = self::getInstance();
-        if (!$registry->offsetExists(self::DISPATCHER)) {
-            $dispatcher = new EventDispatcher();
-            $registry->offsetSet(self::DISPATCHER, $dispatcher);
+        if (!isset(self::$_registry[self::DISPATCHER])) {
+            self::$_registry[self::DISPATCHER] = new EventDispatcher();
         }
-        return $registry->offsetGet(self::DISPATCHER);
+        return self::$_registry[self::DISPATCHER];
+    }
+
+    /**
+     *
+     *
+     * @param SearchQueueAbstract $queue
+     *
+     */
+    public static function setQueue(SearchQueueAbstract $queue)
+    {
+        self::$_registry[self::QUEUE] = $queue;
+    }
+
+    /**
+     *
+     * 
+     * @return SearchQueueAbstract
+     */
+    public static function getQueue()
+    {
+        if (!isset(self::$_registry[self::QUEUE])) {
+            self::$_registry[self::QUEUE] = new SearchQueueIteratorQueue();
+        }
+        return self::$_registry[self::QUEUE];
     }
 }

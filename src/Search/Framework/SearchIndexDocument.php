@@ -137,6 +137,7 @@ class SearchIndexDocument implements \IteratorAggregate
     public function getField($id)
     {
         if (!isset($this->_fields[$id])) {
+            // @see SearchIndexDocument::__set()
             $this->$id = '';
         }
         return $this->_fields[$id];

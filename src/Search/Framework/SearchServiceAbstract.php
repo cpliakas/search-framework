@@ -161,8 +161,27 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     public function attachCollection(SearchCollectionAbstract $collection)
     {
         $this->_schema = null;
-        $this->_collections[] = $collection;
+        $id = $collection->getId();
+        $this->_collections[$id] = $collection;
         return $this;
+    }
+
+    /**
+     * Returns a collection given it's unique identifier.
+     *
+     * @param string $id
+     *   The unique identifier of the collection.
+     *
+     * @return SearchCollectionAbstract
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function getCollection($id)
+    {
+        if (!isset($this->_collections[$id])) {
+            throw new \InvalidArgumentException();
+        }
+        return $this->_collections;
     }
 
     /**
@@ -173,6 +192,20 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     public function getCollections()
     {
         return $this->_collections;
+    }
+
+    /**
+     * Removes a collection from this server.
+     *
+     * @param string $id
+     *   The unique identifier of the collection.
+     *
+     * @return SearchServiceAbstract
+     */
+    public function removeCollection($id)
+    {
+        unset($this->_collections[$id]);
+        return $this;
     }
 
     /**
@@ -239,19 +272,15 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      */
     public function index()
     {
-        foreach ($this->_collections as $collection) {
-            $this->indexCollection($collection);
-        }
+
     }
 
     /**
-     * Indexes a collection.
-     *
-     * @param SearchCollectionAbstract $collection
+     * Indexes all queued items.
      */
-    public function indexCollection(SearchCollectionAbstract $collection)
+    public function indexQueuedItems()
     {
-
+        
     }
 
     /**

@@ -15,6 +15,42 @@ namespace Search\Framework;
 class SearchQueueConsumerIterator extends SearchQueueIteratorAbstract
 {
     /**
+     * The queue object set for the collection.
+     *
+     * @var SearchQueueAbstract
+     */
+    protected $_queue;
+
+    /**
+     *
+     * @var int
+     */
+    protected $_limit;
+
+    /**
+     * Constructs a SearchQueueConsumerIterator object.
+     *
+     * @param SearchQueueAbstract $queue
+     *   The queue object that is consuming the queue.
+     */
+    public function __construct(SearchQueueAbstract $queue)
+    {
+        $this->_queue = $queue;
+        $this->_limit = $queue->getLimit();
+        $this->_timeout = $queue->getLimit();
+    }
+
+    /**
+     * Checks whether the operation has timed out.
+     *
+     * @return boolean
+     */
+    public function limitExceeded()
+    {
+        return $this->_count > $this->_limit;
+    }
+
+    /**
      * Implements \Iterator::valid().
      *
      * Fetch a message from the queue if we are still within the timeout and

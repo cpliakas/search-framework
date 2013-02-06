@@ -109,13 +109,6 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
     protected $_schema;
 
     /**
-     * The object that interacts with the indexing queue.
-     *
-     * @var SearchQueueInterface
-     */
-    protected $_queue;
-
-    /**
      * Constructs a SearchCollectionAbstract object.
      *
      * Reads configuration file and instantiates the SearchSchema object from
@@ -209,9 +202,8 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
      */
     public function queueScheduledItems()
     {
-        $queue = $this->getQueue();
         foreach ($this as $message) {
-            $queue->publish($message);
+            $message->publish();
         }
     }
 
@@ -223,7 +215,8 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
      */
     public function getIterator()
     {
-        return new SearchQueueProducerIterator($this);
+        $queue = SearchRegistry::getQueue();
+        return new SearchQueueProducerIterator($queue, $this);
     }
 
     /**
@@ -255,36 +248,6 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
     public function getSchema()
     {
         return $this->_schema;
-    }
-
-    /**
-     * Sets or replaces the object that interacts with the indexing queue.
-     *
-     * @param SearchQueueAbstract $queue
-     *   The object that interacts with the indexing queue.
-     *
-     * @return SearchCollectionAbstract
-     */
-    public function setQueue(SearchQueueAbstract $queue)
-    {
-        $this->_queue = $queue;
-        return $this;
-    }
-
-    /**
-     * Returns the object that interacts with the indexing queue.
-     *
-     * If no queue is set, a SearchQueueIteratorQueue class is instantiated and
-     * set as the queue class.
-     *
-     * @return SearchQueueAbstract
-     */
-    public function getQueue()
-    {
-        if (!$this->_queue) {
-            $this->_queue = new SearchQueueIteratorQueue($this, 'default');
-        }
-        return $this->_queue;
     }
 
     /**

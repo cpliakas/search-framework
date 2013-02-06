@@ -26,19 +26,6 @@ abstract class SearchQueueIteratorAbstract implements \Iterator
 {
     /**
      *
-     * @var SearchCollectionAbstract
-     */
-    protected $_collection;
-    
-    /**
-     * The queue object set for the collection.
-     *
-     * @var SearchQueueAbstract
-     */
-    protected $_queue;
-
-    /**
-     *
      * @var int
      */
     protected $_timeout;
@@ -47,13 +34,13 @@ abstract class SearchQueueIteratorAbstract implements \Iterator
      *
      * @var int
      */
-    protected $_limit;
+    protected $_count;
 
     /**
      *
      * @var int
      */
-    protected $_count;
+    protected $_expiry;
 
     /**
      * The current message fetched from the queue.
@@ -61,18 +48,6 @@ abstract class SearchQueueIteratorAbstract implements \Iterator
      * @var SearchQueueMessage
      */
     protected $_currentMessage;
-
-    /**
-     * Constructs a SearchQueueIteratorAbstract object.
-     *
-     * @param SearchQueueCollection $collection
-     *   The queue object that is consuming an indexing queue.
-     */
-    public function __construct(SearchCollectionAbstract $collection)
-    {
-        $this->_collection = $collection;
-        $this->_queue = $collection->getQueue();
-    }
 
     /**
      * Checks whether the operation has timed out.
@@ -85,17 +60,7 @@ abstract class SearchQueueIteratorAbstract implements \Iterator
      */
     public function timedOut()
     {
-        return (SearchCollectionAbstract::NO_LIMIT != $this->_timeout && time() >= $this->_timeout);
-    }
-
-    /**
-     * Checks whether the operation has timed out.
-     *
-     * @return boolean
-     */
-    public function limitExceeded()
-    {
-        return (SearchCollectionAbstract::NO_LIMIT != $this->_limit && $this->_count > $this->_limit);
+        return time() >= $this->_expiry;
     }
 
     /**
@@ -107,12 +72,11 @@ abstract class SearchQueueIteratorAbstract implements \Iterator
     {
         $this->_count = 0;
 
-        $this->_timeout = $this->_collection->getTimeout();
         if ($this->_timeout != SearchCollectionAbstract::NO_LIMIT) {
-            $this->_timeout += time();
+            $this->_expiry = $this->_timeout + time();
+        } else {
+            $this->_expiry = PHP_INT_MAX;
         }
-
-        $this->_limit = $this->_collection->getLimit();
     }
 
     /**

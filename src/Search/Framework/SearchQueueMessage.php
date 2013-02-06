@@ -17,6 +17,20 @@ namespace Search\Framework;
 class SearchQueueMessage
 {
     /**
+     * The queue that the messages is published to / consumed from.
+     *
+     * @var SearchQueueAbstract
+     */
+    protected $_queue;
+
+    /**
+     * The collection containing the item that is scheduled for indexing.
+     *
+     * @var SearchCollectionAbstract
+     */
+    protected $_collection;
+
+    /**
      * The message body.
      *
      * @var string
@@ -40,6 +54,54 @@ class SearchQueueMessage
      * @var int|string
      */
     protected $_id;
+
+    /**
+     * Constructs a SearchQueueAbstract object.
+     *
+     * @param SearchQueueAbstract $queue
+     *   The queue that the messages is published to / consumed from.
+     */
+    public function __construct(SearchQueueAbstract $queue)
+    {
+        $this->_queue = $queue;
+    }
+
+    /**
+     * Returns the queue that the messages is published to / consumed from.
+     *
+     * @return SearchCollectionAbstract
+     */
+    public function getQueue()
+    {
+        return $this->_queue;
+    }
+
+    /**
+     * Sets the collection containing the item being published to or consumed
+     * from the queue.
+     *
+     * @param SearchCollectionAbstract $collection
+     *   The collection containing the item being published to or consumed from
+     *   the queue.
+     *
+     * @return SearchQueueMessage
+     */
+    public function setCollection(SearchCollectionAbstract $collection)
+    {
+        $this->_collection = $collection;
+        return $this;
+    }
+
+    /**
+     * Returns the collection containing the item being published to or consumed
+     * from the queue.
+     *
+     * @return SearchCollectionAbstract
+     */
+    public function getCollection()
+    {
+        return $this->_collection;
+    }
 
     /**
      * Sets the message body.
@@ -119,6 +181,16 @@ class SearchQueueMessage
     public function getId()
     {
         return $this->_id;
+    }
+
+    /**
+     * Helper function that publishes this message to the queue.
+     *
+     * @see SearchQueueAdapter::publish()
+     */
+    public function publish()
+    {
+        $this->_queue->publish($this);
     }
 
     /**

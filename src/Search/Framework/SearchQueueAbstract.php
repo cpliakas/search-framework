@@ -20,12 +20,23 @@ namespace Search\Framework;
 abstract class SearchQueueAbstract implements \IteratorAggregate
 {
     /**
-     * The collection containing the source data being published to and consumed
-     * from the queue.
+     * The name of the default queue.
      *
-     * @var SearchCollectionAbstract
+     * @var string
      */
-    protected $_collection;
+    protected static $_defaultQueue = 'default';
+
+    /**
+     *
+     * @var int
+     */
+    protected $_limit = 200;
+
+    /**
+     *
+     * @var int
+     */
+    protected $_timeout = 30;
 
     /**
      * The name of the search index queue.
@@ -50,10 +61,9 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      * @param string $name
      *   The name of the search index queue.
      */
-    public function __construct(SearchCollectionAbstract $collection, $name)
+    public function __construct($name = null)
     {
-        $this->_collection = $collection;
-        $this->_name = $name;
+        $this->_name = (null === $name) ? static::$_defaultQueue : $name;
     }
 
     /**
@@ -66,17 +76,78 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      */
     public function getIterator()
     {
-        return new SearchQueueConsumerIterator($this->_collection);
+        return new SearchQueueConsumerIterator($this);
     }
 
     /**
-     * Returns the collection containing the source data being acted on.
+     *
+     * @param string $name
+     *
+     *
+     */
+    public static function setDefaultQueue($name)
+    {
+        static::$_defaultQueue = $name;
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public static function getDefaultQueue()
+    {
+        return static::$_defaultQueue;
+    }
+
+    /**
+     * Sets the maximum number of documents that are processed during indexing
+     * and queuing operations.
+     *
+     * @param int $limit
+     *   The maximum number of documents to process
      *
      * @return SearchCollectionAbstract
      */
-    public function getCollection()
+    public function setLimit($limit)
     {
-        return $this->_collection;
+        $this->_limit = $limit;
+        return $this;
+    }
+
+    /**
+     * Gets that maximum number of documents that are processed during indexing
+     * operation.
+     *
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->_timeout;
+    }
+
+    /**
+     * Sets the timeout in seconds for the indexing operations.
+     *
+     * @param int $timeout
+     *   The the maximum amount of time in seconds allowed for the indexing and
+     *   queuing operations.
+     *
+     * @return SearchCollectionAbstract
+     */
+    public function setTimeout($timeout)
+    {
+        $this->_timeout = $timeout;
+        return $this;
+    }
+
+    /**
+     * Returns the timeout in seconds for the indexing and queuing operations.
+     *
+     * @return int
+     */
+    public function getTimeout()
+    {
+        return $this->_config->getOption('timeout', static::$_defaultTimeout);
     }
 
     /**
@@ -137,21 +208,7 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      */
     public function newMessage()
     {
-        return new SearchQueueMessage();
-    }
-
-    /**
-     * Publishes items scheduled for indexing to the queue.
-     *
-     * @todo Implement timeout.
-     */
-    public function publishScheduledItems()
-    {
-        foreach ($this->_collection->fetchScheduledItems() as $item) {
-            $message = $this->newMessage();
-            $this->_collection->buildQueueMessage($message, $item);
-            $this->publish($message);
-        }
+        return new SearchQueueMessage($this);
     }
 
     /**
