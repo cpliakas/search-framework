@@ -13,6 +13,9 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * Loads and stores configuration options.
+ *
+ * This method also contains some static methods than can be used globally to
+ * perfrom various actions such as merging configurations.
  */
 class SearchConfig
 {

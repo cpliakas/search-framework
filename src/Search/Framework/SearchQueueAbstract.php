@@ -20,7 +20,8 @@ namespace Search\Framework;
 abstract class SearchQueueAbstract implements \IteratorAggregate
 {
     /**
-     * The collection containing the source data being acted on.
+     * The collection containing the source data being published to and consumed
+     * from the queue.
      *
      * @var SearchCollectionAbstract
      */
@@ -65,7 +66,7 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      */
     public function getIterator()
     {
-        return new SearchQueueConsumerIterator($this);
+        return new SearchQueueConsumerIterator($this->_collection);
     }
 
     /**
@@ -97,7 +98,7 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      *
      * @return SearchQueueAbstract
      */
-    public function addConsumedMessage(SearchQueueMessage $message)
+    public function attachConsumedMessage(SearchQueueMessage $message)
     {
         $this->_consumedMessage = $message;
         return $this;
@@ -127,6 +128,19 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
     }
 
     /**
+     * Factory function for queue message objects.
+     *
+     * This method is most often overridden by queue backends that require a
+     * message class with backend specific functionality.
+     *
+     * @return SearchQueueMessage
+     */
+    public function newMessage()
+    {
+        return new SearchQueueMessage();
+    }
+
+    /**
      * Publishes items scheduled for indexing to the queue.
      *
      * @todo Implement timeout.
@@ -138,19 +152,6 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
             $this->_collection->buildQueueMessage($message, $item);
             $this->publish($message);
         }
-    }
-
-    /**
-     * Factory function for queue message objects.
-     *
-     * This method is most often overridden by queue backends that require a
-     * message class with backend specific functionality.
-     *
-     * @return SearchQueueMessage
-     */
-    public function newMessage()
-    {
-        return new SearchQueueMessage();
     }
 
     /**

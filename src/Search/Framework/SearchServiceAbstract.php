@@ -158,7 +158,7 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      *
      * @return SearchServiceAbstract
      */
-    public function addCollection(SearchCollectionAbstract $collection)
+    public function attachCollection(SearchCollectionAbstract $collection)
     {
         $this->_schema = null;
         $this->_collections[] = $collection;
@@ -225,18 +225,6 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     }
 
     /**
-     * Iterates over all collections associated with this search service and
-     * processes the items enqueued for indexing.
-     *
-     * @see SearchCollectionAbstract::index()
-     */
-    public function index()
-    {
-        $indexer = new SearchIndexer($this);
-        $indexer->indexCollections();
-    }
-
-    /**
      * Creates an index based off of each collection's schema.
      *
      * @param string $name
@@ -245,6 +233,26 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      *   Backend-specific options related to creating the index.
      */
     abstract public function createIndex($name, array $options = array());
+
+    /**
+     * Indexes all collections attached to this service.
+     */
+    public function index()
+    {
+        foreach ($this->_collections as $collection) {
+            $this->indexCollection($collection);
+        }
+    }
+
+    /**
+     * Indexes a collection.
+     *
+     * @param SearchCollectionAbstract $collection
+     */
+    public function indexCollection(SearchCollectionAbstract $collection)
+    {
+
+    }
 
     /**
      * Processes a document for indexing.

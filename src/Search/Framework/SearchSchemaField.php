@@ -131,7 +131,7 @@ class SearchSchemaField
         // Reset the identifier, update the hash tables by re-adding the field.
         $schema->removeField($this->_id);
         $this->_id = $id;
-        $schema->addField($this);
+        $schema->attachField($this);
 
         // Update the schema's unique field.
         if ($reset_unique_field) {
@@ -168,7 +168,7 @@ class SearchSchemaField
     {
         $schema->removeField($this->_id);
         $this->_name = $name;
-        $schema->addField($this);
+        $schema->attachField($this);
         return $this;
     }
 

@@ -68,10 +68,22 @@ class SearchRegistry extends \ArrayObject
      * @param mixed $value
      *   The value of the variable being registered.
      */
-    public static function set($index, &$value)
+    public static function set($index, $value)
     {
         $registry = self::getInstance();
         $registry->offsetSet($index, $value);
+    }
+
+    /**
+     * Removes a variable in the registry.
+     *
+     * @param string $index
+     *   The name of the registered variable.
+     */
+    public static function remove($index)
+    {
+        $registry = self::getInstance();
+        $registry->offsetUnset($index);
     }
 
     /**

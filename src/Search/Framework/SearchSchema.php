@@ -57,7 +57,7 @@ class SearchSchema implements \IteratorAggregate
                 throw new \InvalidArgumentException($message);
             }
             foreach ($schema_options['fields'] as $id => $field_options) {
-                $this->addField(new SearchSchemaField($id, $field_options));
+                $this->attachField(new SearchSchemaField($id, $field_options));
             }
         }
 
@@ -84,7 +84,7 @@ class SearchSchema implements \IteratorAggregate
      *
      * @return SearchSchema
      */
-    public function addField(SearchSchemaField $field)
+    public function attachField(SearchSchemaField $field)
     {
         $id = $field->getId();
         $name = $field->getName();
@@ -142,7 +142,20 @@ class SearchSchema implements \IteratorAggregate
     }
 
     /**
-     * Disassociates a field from the schema.
+     * De-references a field from the schema.
+     *
+     * @param SearchSchemaField $field
+     *   The field being detached.
+     *
+     * @return SearchSchema
+     */
+    public function detachField(SearchSchemaField $field)
+    {
+        return $this->removeField($field->getId());
+    }
+
+    /**
+     * De-references a field from the schema.
      *
      * @param string $id
      *   The unique identifier of the field.

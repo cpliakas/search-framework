@@ -29,7 +29,7 @@ $solr = new SolrSearchService($endpoint);
 // Associate a collection, or source data being indexed, with the Solr service.
 $drupal_planet = new FeedCollection();
 $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
-$solr->addCollection($drupal_planet);
+$solr->attachCollection($drupal_planet);
 
 // Index the feeds into Solr.
 $solr->index();
@@ -54,7 +54,7 @@ use Search\Service\Elasticsearch\ElasticsearchSearchService;
 // Associate the collection with the Elasticsearch service.
 $endpoint = new SearchServiceEndpoint('local', 'localhost', 'feeds', 9200);
 $elasticsearch = new ElasticsearchService($endpoint);
-$elasticsearch->addCollection($drupal_planet);
+$elasticsearch->attachCollection($drupal_planet);
 
 // Create the index and put the mappings.
 $elasticsearch->createIndex();

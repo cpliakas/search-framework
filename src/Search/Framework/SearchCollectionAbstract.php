@@ -11,75 +11,98 @@ namespace Search\Framework;
 /**
  * Adapter class extended by search collections.
  *
- * Collections are data sources containing the content being indexed. Examples
- * are files on a filesystem, RSS feeds, the content in a CMS, or anything else
- * imaginable that can be indexed.
+ * Collections are objects that reference a resource containing the data being
+ * indexed. Examples could be files on a filesystem, RSS feeds, the content in a
+ * CMS, or anything else imaginable having data that can be indexed.
+ *
+ * This object also acts as an on-demand scheduler agent that interacts with the
+ * resource's index scheduler to fetch the items that are due to be indexed. The
+ * object then passes the fetched items to a queue for processing by the index
+ * worker contained in the search service class.
+ *
+ * Iterating over this class fetches the items scheduled for indexing and
+ * returns the messages that will be published to the queue.
  */
-abstract class SearchCollectionAbstract implements SearchConfigurableInterface
+abstract class SearchCollectionAbstract implements SearchConfigurableInterface, \IteratorAggregate
 {
     /**
-     * Flags that the specified constraint has no limit.
+     * Value that specifies a constraint has no limit, for example an operation
+     * timeout or document limit.
      *
      * @var int
      */
     const NO_LIMIT = -1;
 
     /**
-     * The unique identifier of the collection class.
+     * The unique identifier of the extending collection class.
      *
      * It is best practice to use only lowercase letters, numbers, dots (.),
-     * and underscores (_).
+     * and underscores (_). Examples might be "feed", "drupal.entity.node".
      *
      * @var string
      */
     protected static $_id = '';
 
     /**
-     * The default "limit" option for this collection.
-     *
-     * This limit is the maximum number of documents that are processed during
-     * indexing and queuing operations.
-     *
-     * @var int
-     */
-    protected static $_defaultLimit = self::NO_LIMIT;
-
-    /**
-     * The default "timeout" option for this collection.
-     *
-     * The timeout is the maximum amount of time in seconds allowed for the
-     * indexing and queuing operations.
-     *
-     * @var int
-     */
-    protected static $_defaultTimeout = self::NO_LIMIT;
-
-    /**
-     * The type of content in this collection.
+     * The type of content contained in this resource that this collection
+     * references.
      *
      * It is best practice to use only lowercase letters, numbers, dots (.),
      * and underscores (_). Examples might be "feeds", "database.db_name".
      *
-     * Types can be shared by multiple collection classes, but their defined
-     * schemas should be compatible.
+     * Types can be shared by multiple collection classes and instances, but
+     * their defined schemas should be compatible.
      *
-     * This value is used by backends such as Elasticsearch to determine the
-     * mapping that is applied to the document being indexed.
+     * This value is also used by backends such as Elasticsearch to determine
+     * the mapping that is applied to the document being indexed, hence why it
+     * is important that the schemas are compatible when this value is shared
+     * across multiple instances.
      *
      * @var string
      */
     protected $_type = '';
 
     /**
-     * Object populated with configuration options set for this instance.
+     * The default limit on how many items are processed during an operation.
+     *
+     * This limit is the maximum number of documents that are processed during
+     * indexing and queuing operations.
+     *
+     * It is important to note that the limit are isolated to the individual
+     * operations. For example if a limit of 50 is set, a queuing operation
+     * could publish 50 items with a subsequent indexing operation processing 50
+     * documents as well.
+     *
+     * @var int
+     */
+    protected static $_defaultLimit = self::NO_LIMIT;
+
+    /**
+     * The default timout for an operation.
+     *
+     * The timeout is the maximum amount of time in seconds allowed for an
+     * operation, for example queuing or indexing.
+     *
+     * It is important to note that the timout is isolated to the individual
+     * operations. For example if a timeout of 5 is set, a queuing operation
+     * could last up to 5 seconds with a subsequent indexing operation lasting
+     * up to 5 seconds as well.
+     *
+     * @var int
+     */
+    protected static $_defaultTimeout = self::NO_LIMIT;
+
+    /**
+     * Parses and stores the configuration options set for this collection
+     * instance.
      *
      * @var SearchConfig
      */
     protected $_config;
 
     /**
-     * The schema modeled after the field definitions in the collection.yml
-     * configuration file.
+     * The schema that models the collection's source data as it is stored in
+     * the index.
      *
      * @var SearchSchema
      */
@@ -120,22 +143,6 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     }
 
     /**
-     * Implements SearchConfigurableInterface::getId().
-     */
-    public function getId()
-    {
-        return static::$_id;
-    }
-
-    /**
-     * Implements SearchConfigurableInterface::getConfig().
-     */
-    public function getConfig()
-    {
-        return $this->_config;
-    }
-
-    /**
      * Hook that allows the collection object to initialize itself.
      *
      * This is most often implemented to instantiate and set a backend library,
@@ -146,10 +153,11 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     /**
      * Fetches the items that are scheduled for indexing.
      *
-     * This method acts as the worker that interacts with the index scheduler to
-     * retrieve the items that are scheduled for indexing. Often times the index
-     * scheduler can be as simple as a backend client library querying the data
-     * source to get the most recently updated items.
+     * This method acts as an on-demand scheduler agent that interacts with the
+     * index scheduler to see which items are due for indexing. In some
+     * instances, a scheduler agent can be as simple as a client library
+     * fetching data from some backend, for example a feed parser consuming a
+     * resource.
      *
      * @return \Traversable|array
      *   The items that are scheduled to be indexed.
@@ -157,51 +165,90 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     abstract public function fetchScheduledItems();
 
     /**
-     * Loads the source data from the item fetched from the indexing queue.
-     *
-     * This method is useful for lazy-loading the source data given a unique
-     * identifier. For example, when loading data from a CMS, the item will
-     * often be an identifier of the content being indexed.
-     *
-     * @param mixed $item
-     *   The item that is scheduled for indexing.
-     *
-     * @return mixed
-     *   The source data being indexed.
-     */
-    public function loadSourceData($item)
-    {
-        return $item;
-    }
-
-    /**
      * Builds a queue message for the item scheduled for indexing.
      *
      * This hook is invoked just prior to sending the item to the index queue.
      *
      * @param SearchQueueMessage $message
-     *   The queue message being built.
-     *
+     *   The message that will be published to the queue.
      * @param mixed $item
      *   The item that is scheduled for indexing.
      */
     abstract public function buildQueueMessage(SearchQueueMessage $message, $item);
 
     /**
-     * Populates a SearchIndexDocument object with fields extracted from the the
-     * source data.
+     * Loads the source data from the message fetched from the indexing queue.
      *
-     * This hook is invoked prior to processing the document for indexing.
+     * This method is useful for lazy-loading the source data given a unique
+     * identifier. For example, when loading data from a CMS, the item will
+     * often be an identifier of the content being indexed.
+     *
+     * @param SearchQueueMessage $message
+     *   The message consumed from the queue containing the items scheduled for
+     *   indexing.
+     *
+     * @return mixed
+     *   The source data being indexed.
+     */
+    abstract public function loadSourceData(SearchQueueMessage $message);
+
+    /**
+     * Populates a SearchIndexDocument object with fields extracted from the the
+     * source data loaded in SearchCollectionAbstract::loadSourceData().
      *
      * @param SearchIndexDocument $document
-     *   The document object instantiated by the service.
+     *   The document object that is populated with fields by this method.
      * @param mixed $data
-     *   The source data being indexed.
+     *   The source data returned by SearchCollectionAbstract::loadSourceData()
+     *   that is being indexed.
      */
     abstract public function buildDocument(SearchIndexDocument $document, $data);
 
     /**
-     * Returns this collection's schema.
+     * Publishes the items scheduled for indexing to the queue.
+     */
+    public function queueScheduledItems()
+    {
+        $queue = $this->getQueue();
+        foreach ($this as $message) {
+            $queue->publish($message);
+        }
+    }
+
+    /**
+     * Implements \IteratorAggregate::getIterator().
+     *
+     * Iterates over the items scheduled for indexing and returns the populated
+     * messages objects that can be sent to the queue.
+     */
+    public function getIterator()
+    {
+        return new SearchQueueProducerIterator($this);
+    }
+
+    /**
+     * Implements SearchConfigurableInterface::getId().
+     *
+     * @see SearchCollectionAbstract::_id
+     */
+    public function getId()
+    {
+        return static::$_id;
+    }
+
+    /**
+     * Implements SearchConfigurableInterface::getConfig().
+     *
+     * @see SearchCollectionAbstract::_config
+     */
+    public function getConfig()
+    {
+        return $this->_config;
+    }
+
+    /**
+     * Returns the schema that models the collection's source data as it is
+     * stored in the index.
      *
      * @return SearchSchema
      */
@@ -211,7 +258,7 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     }
 
     /**
-     * Sets the object that interacts with the indexing queue.
+     * Sets or replaces the object that interacts with the indexing queue.
      *
      * @param SearchQueueAbstract $queue
      *   The object that interacts with the indexing queue.
@@ -227,8 +274,8 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     /**
      * Returns the object that interacts with the indexing queue.
      *
-     * If no queue is set, an instance of SearchIteratorQueue is set as the
-     * queue class.
+     * If no queue is set, a SearchQueueIteratorQueue class is instantiated and
+     * set as the queue class.
      *
      * @return SearchQueueAbstract
      */
@@ -241,7 +288,8 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     }
 
     /**
-     * Sets the type of content in this collection.
+     * Sets or replaces the type of content contained in this resource that this
+     * collection references.
      *
      * @param string $type
      *   The type of content in this collection.
@@ -255,7 +303,7 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface
     }
 
     /**
-     * Returns the type of content in this collection.
+     * Returns the type of content contained in this collection.
      *
      * @return string
      */

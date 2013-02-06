@@ -109,7 +109,7 @@ class SearchIndexDocument implements \IteratorAggregate
      *
      * @return SearchIndexDocument
      */
-    public function addField(SearchIndexField $field)
+    public function attachField(SearchIndexField $field)
     {
         // Throw the SearchEvents::FIELD_ENRICH event, reset the field's value
         // with the enriched value.
@@ -230,7 +230,7 @@ class SearchIndexDocument implements \IteratorAggregate
     public function __set($id, $value)
     {
         $field = $this->_service->newField($id, $value);
-        $this->addField($field);
+        $this->attachField($field);
     }
 
     /**
