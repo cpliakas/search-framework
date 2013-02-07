@@ -8,6 +8,8 @@
 
 namespace Search\Framework;
 
+use Search\Framework\Event\SearchCollectionEvent;
+
 /**
  * Adapter class extended by search collections.
  *
@@ -109,6 +111,20 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
     protected $_schema;
 
     /**
+     * The global dispatcher object.
+     *
+     * @var \Symfony\Component\EventDispatcher\EventDispatcher
+     */
+    protected $_dispatcher;
+
+    /**
+     * The global queue object.
+     *
+     * @var SearchQueueAbstract
+     */
+    protected $_queue;
+
+    /**
      * Constructs a SearchCollectionAbstract object.
      *
      * Reads configuration file and instantiates the SearchSchema object from
@@ -131,6 +147,9 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
 
         $schema_options = $this->_config->getOption('schema', array());
         $this->_schema = new SearchSchema($schema_options);
+
+        $this->_dispatcher = SearchRegistry::getDispatcher();
+        $this->_queue = SearchRegistry::getQueue();
 
         $this->init();
     }
@@ -202,9 +221,14 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
      */
     public function queueScheduledItems()
     {
+        $event = new SearchCollectionEvent($this);
+        $this->_dispatcher->dispatch(SearchEvents::COLLECTION_PRE_QUEUE, $event);
+
         foreach ($this as $message) {
             $message->publish();
         }
+
+        $this->_dispatcher->dispatch(SearchEvents::COLLECTION_POST_QUEUE, $event);
     }
 
     /**
@@ -215,8 +239,7 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
      */
     public function getIterator()
     {
-        $queue = SearchRegistry::getQueue();
-        return new SearchQueueProducerIterator($queue, $this);
+        return new SearchQueueProducerIterator($this->_queue, $this);
     }
 
     /**

@@ -157,6 +157,22 @@ class SearchConfig
     }
 
     /**
+     * Returns a project's root directory.
+     *
+     * @param SearchConfigurableInterface $configurable
+     *   An instance of the configurable class.
+     *
+     * @return string
+     *   The relative path to the root directory.
+     */
+    public function getRootDir(SearchConfigurableInterface $configurable)
+    {
+        $reflection = new \ReflectionClass($configurable);
+        $class_dir = dirname($reflection->getFileName());
+        return $class_dir . '/../../../..';
+    }
+
+    /**
      * Returns the path to the directory containing the default configuration
      * file for the configurable class.
      *
@@ -177,10 +193,8 @@ class SearchConfig
      */
     public function getDefaultConfigDir(SearchConfigurableInterface $configurable)
     {
-        $reflection = new \ReflectionClass($configurable);
-        $class_dir = dirname($reflection->getFileName());
-        // @todo Figure out how far something is nested via its namespace.
-        return realpath($class_dir . '/../../../../conf');
+        $root_dir = self::getRootDir($configurable);
+        return realpath($root_dir . '/conf');
     }
 
     /**

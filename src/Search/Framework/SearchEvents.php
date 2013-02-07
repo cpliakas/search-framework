@@ -14,6 +14,16 @@ namespace Search\Framework;
 final class SearchEvents
 {
     /**
+     * Event thrown prior to queuing the items scheduled for indexing.
+     */
+    const COLLECTION_PRE_QUEUE = 'search.collection.pre_queue';
+
+    /**
+     * Event thrown after the the items scheduled for indexing have been queued.
+     */
+    const COLLECTION_POST_QUEUE = 'search.collection.post_queue';
+
+    /**
      * Event thrown prior to loading configurations from files.
      *
      * This is most often implemented by caching backends to prevent reading the

@@ -51,6 +51,20 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     protected $_schema;
 
     /**
+     * The global dispatcher object.
+     *
+     * @var \Symfony\Component\EventDispatcher\EventDispatcher
+     */
+    protected $_dispatcher;
+
+    /**
+     * The global queue object.
+     *
+     * @var SearchQueueAbstract
+     */
+    protected $_queue;
+
+    /**
      * Constructs a SearchServiceAbstract object.
      *
      * @param SearchServiceEndpoint|array $endpoints
@@ -79,6 +93,9 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
 
         $this->_config = new SearchConfig($options);
         $this->_config->load($this);
+
+        $this->_dispatcher = SearchRegistry::getDispatcher();
+        $this->_queue = SearchRegistry::getQueue();
 
         $this->init($endpoints, $options);
     }
@@ -220,7 +237,6 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     public function getSchema()
     {
         if (!$this->_schema) {
-            $dispatcher = SearchRegistry::getDispatcher();
 
             $schema_options = array();
             foreach ($this->_collections as $collection) {
@@ -228,7 +244,7 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
                 // Loads schema and throws the SearchEvents::SCHEMA_ALTER event.
                 $schema = clone $collection->getSchema();
                 $event = new SearchSchemaEvent($this, $collection, $schema);
-                $dispatcher->dispatch(SearchEvents::SCHEMA_ALTER, $event);
+                $this->_dispatcher->dispatch(SearchEvents::SCHEMA_ALTER, $event);
                 $cur_options = $schema->toArray();
 
                 // Just set the schema options on the first pass.
@@ -273,7 +289,7 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     /**
      * Iterates over all collections attached to this search service and queues
      * the content scheduled for indexing. After queuing is complete, the search
-     * service processes the queue and
+     * service processes the queue and indexes the items.
      */
     public function index()
     {
@@ -284,43 +300,52 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     }
 
     /**
-     * Processes the queue and indexes the items in the queue.
+     * Processes the queue and indexes the queued items.
      */
     public function indexQueuedItems()
     {
-        $queue = SearchRegistry::getQueue();
-        $dispatcher = SearchRegistry::getDispatcher();
-
         try {
 
             // Adds the service instance as a subscriber only for the duration
             // of the indexing process.
-            $dispatcher->addSubscriber($this);
+            $this->_dispatcher->addSubscriber($this);
 
             $service_event = new SearchServiceEvent($this);
-            $dispatcher->dispatch(SearchEvents::SERVICE_PRE_INDEX, $service_event);
+            $this->_dispatcher->dispatch(SearchEvents::SERVICE_PRE_INDEX, $service_event);
 
-            foreach ($queue as $message) {
+            // Consume messages from the queue that correspond with items that
+            // are scheduled for indexing.
+            foreach ($this->_queue as $message) {
 
+                // Load the source data form the message. The message usually
+                // contains a unique identifier in the body. Skip processing if
+                // false is returned as the source data.
                 $collection = $message->getCollection();
-                $document = $this->newDocument();
                 $data = $collection->loadSourceData($message);
 
-                $document_event = new SearchDocumentEvent($this, $document, $data);
-                $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
-                $this->indexDocument($collection, $document);
-                $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
+                if ($data !== false) {
+
+                    // Build an index document from the source data.
+                    $document = $this->newDocument();
+                    $collection->buildDocument($document, $data);
+
+                    // Index the document, sandwich indexing with events.
+                    $document_event = new SearchDocumentEvent($this, $document, $data);
+                    $this->_dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
+                    $this->indexDocument($collection, $document);
+                    $this->_dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
+                }
             }
 
-            $dispatcher->dispatch(SearchEvents::SERVICE_POST_INDEX, $service_event);
+            $this->_dispatcher->dispatch(SearchEvents::SERVICE_POST_INDEX, $service_event);
 
             // The service should only listen to events throws during it's own
             // indexing operation.
-            $dispatcher->removeSubscriber($this);
+            $this->_dispatcher->removeSubscriber($this);
 
         } catch (Exception $e) {
             // Make sure this service is removed as a subscriber. See above.
-            $dispatcher->removeSubscriber($this);
+            $this->_dispatcher->removeSubscriber($this);
             throw $e;
         }
     }
