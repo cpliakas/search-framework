@@ -12,7 +12,7 @@ use Search\Framework\SearchConfig;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Event object for collection related events.
+ * Event object for config related events.
  */
 class SearchConfigEvent extends Event
 {

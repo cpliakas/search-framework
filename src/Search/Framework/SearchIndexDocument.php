@@ -34,6 +34,13 @@ class SearchIndexDocument implements \IteratorAggregate
     protected $_service;
 
     /**
+     * The service that is indexing this document.
+     *
+     * @var EventDispatcher
+     */
+    protected $_dispatcher;
+
+    /**
      * Constructs a SearchIndexDocument object.
      *
      * @param SearchServiceAbstract $service
@@ -42,6 +49,7 @@ class SearchIndexDocument implements \IteratorAggregate
     public function __construct(SearchServiceAbstract $service)
     {
         $this->_service = $service;
+        $this->_dispatcher = SearchRegistry::getDispatcher();
     }
 
     /**
@@ -59,21 +67,6 @@ class SearchIndexDocument implements \IteratorAggregate
         $iterator = new SearchIndexFieldIterator($this->_fields);
         $iterator->setDocument($this);
         return $iterator;
-    }
-
-    /**
-     * Helper method for dispatching a field event.
-     *
-     * @param string $event_name
-     *   The name of the event to dispatch.
-     * @param SearchFieldEvent $event
-     *   The SearchFieldEvent event object passed to the handlers / listeners.
-     *
-     * @see Symfony::Component::EventDispatcher::EventDispatcher::dispatch().
-     */
-    public function dispatchEvent($event_name, SearchFieldEvent $event)
-    {
-        SearchRegistry::getDispatcher()->dispatch($event_name, $event);
     }
 
     /**
@@ -109,12 +102,12 @@ class SearchIndexDocument implements \IteratorAggregate
      *
      * @return SearchIndexDocument
      */
-    public function addField(SearchIndexField $field)
+    public function attachField(SearchIndexField $field)
     {
         // Throw the SearchEvents::FIELD_ENRICH event, reset the field's value
         // with the enriched value.
         $event = new SearchFieldEvent($this->_service, $field);
-        $this->dispatchEvent(SearchEvents::FIELD_ENRICH, $event);
+        $this->_dispatcher->dispatch(SearchEvents::FIELD_ENRICH, $event);
         $field->setValue($event->getValue());
 
         $id = $field->getId();
@@ -137,6 +130,7 @@ class SearchIndexDocument implements \IteratorAggregate
     public function getField($id)
     {
         if (!isset($this->_fields[$id])) {
+            // @see SearchIndexDocument::__set()
             $this->$id = '';
         }
         return $this->_fields[$id];
@@ -214,7 +208,7 @@ class SearchIndexDocument implements \IteratorAggregate
         $field = $this->getField($id);
 
         $event = new SearchFieldEvent($this->_service, $field);
-        $this->dispatchEvent(SearchEvents::FIELD_NORMALIZE, $event);
+        $this->_dispatcher->dispatch(SearchEvents::FIELD_NORMALIZE, $event);
 
         return $event->getValue();
     }
@@ -230,7 +224,7 @@ class SearchIndexDocument implements \IteratorAggregate
     public function __set($id, $value)
     {
         $field = $this->_service->newField($id, $value);
-        $this->addField($field);
+        $this->attachField($field);
     }
 
     /**
