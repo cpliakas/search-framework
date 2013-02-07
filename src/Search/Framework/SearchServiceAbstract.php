@@ -8,6 +8,8 @@
 
 namespace Search\Framework;
 
+use Search\Framework\Event\SearchDocumentEvent;
+use Search\Framework\Event\SearchServiceEvent;
 use Search\Framework\Event\SearchSchemaEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -218,6 +220,7 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     public function getSchema()
     {
         if (!$this->_schema) {
+            $dispatcher = SearchRegistry::getDispatcher();
 
             $schema_options = array();
             foreach ($this->_collections as $collection) {
@@ -225,7 +228,7 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
                 // Loads schema and throws the SearchEvents::SCHEMA_ALTER event.
                 $schema = clone $collection->getSchema();
                 $event = new SearchSchemaEvent($this, $collection, $schema);
-                $this->_dispatcher->dispatch(SearchEvents::SCHEMA_ALTER, $event);
+                $dispatcher->dispatch(SearchEvents::SCHEMA_ALTER, $event);
                 $cur_options = $schema->toArray();
 
                 // Just set the schema options on the first pass.
@@ -290,8 +293,12 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
 
         try {
 
-            // Register
+            // Adds the service instance as a subscriber only for the duration
+            // of the indexing process.
             $dispatcher->addSubscriber($this);
+
+            $service_event = new SearchServiceEvent($this);
+            $dispatcher->dispatch(SearchEvents::SERVICE_PRE_INDEX, $service_event);
 
             foreach ($queue as $message) {
 
@@ -299,11 +306,13 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
                 $document = $this->newDocument();
                 $data = $collection->loadSourceData($message);
 
-                $document_event = new SearchDocumentEvent($this->_service, $document, $data);
+                $document_event = new SearchDocumentEvent($this, $document, $data);
                 $dispatcher->dispatch(SearchEvents::DOCUMENT_PRE_INDEX, $document_event);
                 $this->indexDocument($collection, $document);
                 $dispatcher->dispatch(SearchEvents::DOCUMENT_POST_INDEX, $document_event);
             }
+
+            $dispatcher->dispatch(SearchEvents::SERVICE_POST_INDEX, $service_event);
 
             // The service should only listen to events throws during it's own
             // indexing operation.

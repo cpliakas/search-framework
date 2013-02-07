@@ -31,11 +31,10 @@ final class SearchEvents
     const SCHEMA_ALTER = 'search.schema.alter';
 
     /**
-     * Event thrown prior to processing a collection's queue.
-     *
-     * @var string
+     * Event thrown prior to a service consuming items in the queue for
+     * indexing.
      */
-    const COLLECTION_PRE_INDEX = 'search.collection.pre_index';
+    const SERVICE_PRE_INDEX = 'search.service.pre_index';
 
     /**
      * Event thrown after a field is extracted from the source data and added to
@@ -66,19 +65,17 @@ final class SearchEvents
      *
      * @var string
      */
-    const DOCUMENT_PRE_INDEX = 'search.docuemnt.pre_index';
+    const DOCUMENT_PRE_INDEX = 'search.document.pre_index';
 
     /**
      * Event thrown after a document was processed for indexing.
      *
      * @var string
      */
-    const DOCUMENT_POST_INDEX = 'search.docuemnt.post_index';
+    const DOCUMENT_POST_INDEX = 'search.document.post_index';
 
     /**
-     * Event thrown after processing a collection's queue has completed.
-     *
-     * @var string
+     * Event thrown after the indexing operation has completed.
      */
-    const COLLECTION_POST_INDEX = 'search.collection.post_index';
+    const SERVICE_POST_INDEX = 'search.service.post_index';
 }
