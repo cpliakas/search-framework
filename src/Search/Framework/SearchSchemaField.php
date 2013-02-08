@@ -13,6 +13,22 @@ namespace Search\Framework;
  */
 class SearchSchemaField
 {
+
+    const TYPE_STRING = 'string';
+    const TYPE_INTEGER = 'integer';
+    const TYPE_DECIMAL = 'decimal';
+    const TYPE_DATE = 'date';
+    const TYPE_BOOLEAN = 'boolean';
+    const TYPE_BINARY = 'binary';
+    const TYPE_LOCATION = 'location';
+
+    const SIZE_INTEGER_BYTE = 'byte';
+    const SIZE_INTEGER_SHORT = 'short';
+    const SIZE_INTEGER_LONG = 'long';
+
+    const SIZE_DECIMAL_FLOAT = 'float';
+    const SIZE_DECIMAL_DOUBLE = 'double';
+
     /**
      * The unique identifier of the field.
      *
@@ -40,6 +56,26 @@ class SearchSchemaField
      * @var string
      */
     protected $_description = '';
+
+    /**
+     * The field's data type.
+     *
+     * @var string
+     */
+    protected $_type = '';
+
+    /**
+     * The size that is related to the data type. Not all data types have a
+     * size.
+     *
+     * @var string|null
+     */
+    protected $_size;
+
+    /**
+     * Whether or not the value is analyzed by the backend.
+     */
+    protected $_analyze = false;
 
     /**
      * Whether the field's data is indexed.
@@ -86,6 +122,14 @@ class SearchSchemaField
 
         if (isset($field_options['description'])) {
             $this->_description = (string) $field_options['description'];
+        }
+
+        if (isset($field_options['type'])) {
+            $this->_type = (string) $field_options['type'];
+        }
+
+        if (isset($field_options['size'])) {
+            $this->_size = (string) $field_options['size'];
         }
 
         if (isset($field_options['index'])) {
@@ -221,6 +265,78 @@ class SearchSchemaField
     }
 
     /**
+     * Sets the field's data type.
+     *
+     * @param string $type
+     *   The field's data type.
+     *
+     * @return SearchSchemaField
+     */
+    public function setType($type)
+    {
+        $this->_type = $type;
+        return $this;
+    }
+
+    /**
+     * Returns the field's data type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->_type;
+    }
+
+    /**
+     * Returns the size that is related to the data type.
+     *
+     * @param string $size
+     *    The size that is related to the data type.
+     *
+     * @return SearchSchemaField
+     */
+    public function setSize($size)
+    {
+        $this->_size = $size;
+        return $this;
+    }
+
+    /**
+     * Returns the size that is related to the data type.
+     *
+     * @return string
+     */
+    public function getSize()
+    {
+        return $this->_size;
+    }
+
+    /**
+     * Sets whether or not the value is analyzed by the backend.
+     *
+     * @param boolean $analyze
+     *   Whether or not the value is analyzed by the backend, defaults to true.
+     *
+     * @return boolean
+     */
+    public function analyze($analyze = true)
+    {
+        $this->_analyze = $analyze;
+        return $this;
+    }
+
+    /**
+     * Returns whether or not the value is analyzed by the backend.
+     *
+     * @return boolean
+     */
+    public function isAnalyzed()
+    {
+        return $this->_analyze;
+    }
+
+    /**
      * Returns whether the field's data is indexed.
      *
      * @return boolean
@@ -300,13 +416,20 @@ class SearchSchemaField
      */
     public function toArray()
     {
-        return array(
+        $schema = array(
             'name' => $this->_name,
             'label' => $this->_label,
             'description' => $this->_description,
+            'type' => $this->_type,
             'store' => $this->_isStored,
             'index' => $this->_isIndexd,
             'multivalue' => $this->_isMultiValued,
         );
+
+        if (isset($this->_size)) {
+            $schema['size'] = $this->_size;
+        }
+
+        return $schema;
     }
 }

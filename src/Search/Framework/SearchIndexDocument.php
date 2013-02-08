@@ -86,9 +86,10 @@ class SearchIndexDocument implements \IteratorAggregate
      *
      * @see SearchServiceAbstract::newField()
      */
-    public function addNewField($id, $value, $name = null)
+    public function addField($id, $value, $name = null)
     {
-        return $this->_service->newField($id, $value, $name);
+        $field = $this->_service->newField($id, $value, $name);
+        return $this->attachField($field);
     }
 
     /**

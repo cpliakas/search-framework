@@ -112,4 +112,12 @@ class SearchIndexField
     {
         return $this->_value;
     }
+
+    /**
+     * Returns the field's value.
+     */
+    public function __toString()
+    {
+        return $this->_value;
+    }
 }
