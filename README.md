@@ -31,7 +31,6 @@ the underlying technology. The main goals are to help bridge the communication
 gaps between search projects and facilitate writing interoperable code by
 adhering to best practices and techniques.
 
-
 Basic Usage
 ===========
 
@@ -90,6 +89,20 @@ $elasticsearch->index();
 $elasticsearch->search('drupal');
 $elasticsearch->delete();
 ```
+
+Is the library also a search abstraction layer?
+===============================================
+
+No, absolutely not. Unlike database management systems that are similar enough
+to abstract 80% of the most common use cases, search engines such as Solr,
+Elasticsearch, Sphinx, and various proprietary solutions have vastly different
+capabilities and paradigms making them extremely difficult to abstract. The
+danger of abstracting complex systems like search engines is the tendency to
+force all interactions to fit the mold of abstraction layer. At that point the
+focus is on the tool as opposed to the search related problems the application
+is trying to solve while at the same time masking the benefits of the search
+engine. The Search Framework library abstracts only the most basic search
+operations while allowing the backend clients to do what they do best.
 
 Installation
 ============
