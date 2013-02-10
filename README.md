@@ -52,8 +52,6 @@ The code below indexes the "Drupal Planet" RSS feed into Solr.
 
 ```php
 
-// Indexes an RSS feed into Solr.
-
 use Search\Framework\SearchServiceEndpoint;
 use Search\Collection\Feed\FeedCollection;  // @see https://github.com/cpliakas/feed-collection
 use Search\Service\Solr\SolrSearchService;  // @see https://github.com/cpliakas/solr-search-service
