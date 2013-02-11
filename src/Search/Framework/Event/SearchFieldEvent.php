@@ -8,6 +8,7 @@
 
 namespace Search\Framework\Event;
 
+use Search\Framework\SearchIndexDocument;
 use Search\Framework\SearchIndexField;
 use Search\Framework\SearchServiceAbstract;
 use Symfony\Component\EventDispatcher\Event;
@@ -24,6 +25,13 @@ class SearchFieldEvent extends Event
      * @var SearchServiceAbstract
      */
     protected $_service;
+
+    /**
+     * The document the field is attached to.
+     *
+     * @var SearchIndexDocument
+     */
+    protected $_document;
 
     /**
      * The field containing the value being enriched or normalized.
@@ -45,12 +53,15 @@ class SearchFieldEvent extends Event
      * @param SearchServiceAbstract $service
      *   The search service that is indexing the document that this field is
      *   attached to.
+     * @param SearchIndexDocument $document
+     *   The document that the field is attached to.
      * @param SearchIndexField $field
      *   The field containing the value being enriched or normalized.
      */
-    public function __construct(SearchServiceAbstract $service, SearchIndexField $field)
+    public function __construct(SearchServiceAbstract $service, SearchIndexDocument $document, SearchIndexField $field)
     {
         $this->_service = $service;
+        $this->_document = $document;
         $this->_field = $field;
         $this->_value = $field->getValue();
     }
@@ -64,6 +75,16 @@ class SearchFieldEvent extends Event
     public function getService()
     {
         return $this->_service;
+    }
+
+    /**
+     * Returns the document that the field is attached to.
+     *
+     * @return SearchIndexDocument
+     */
+    public function getDocument()
+    {
+        return $this->_document;
     }
 
     /**

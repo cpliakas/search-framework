@@ -28,7 +28,7 @@ abstract class SearchQueueIteratorAbstract implements \Iterator
      *
      * @var int
      */
-    protected $_timeout;
+    protected $_timeout = SearchCollectionAbstract::NO_LIMIT;
 
     /**
      *

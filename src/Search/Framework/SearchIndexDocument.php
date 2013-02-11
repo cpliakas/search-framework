@@ -107,7 +107,7 @@ class SearchIndexDocument implements \IteratorAggregate
     {
         // Throw the SearchEvents::FIELD_ENRICH event, reset the field's value
         // with the enriched value.
-        $event = new SearchFieldEvent($this->_service, $field);
+        $event = new SearchFieldEvent($this->_service, $this, $field);
         $this->_dispatcher->dispatch(SearchEvents::FIELD_ENRICH, $event);
         $field->setValue($event->getValue());
 
@@ -207,8 +207,14 @@ class SearchIndexDocument implements \IteratorAggregate
     public function getNormalizedFieldValue($id)
     {
         $field = $this->getField($id);
+        $event = new SearchFieldEvent($this->_service, $this, $field);
 
-        $event = new SearchFieldEvent($this->_service, $field);
+        // Allow the service to pre-normalize the value. Store the normalized
+        // value in the event since it contains the value that is returned.
+        $normalized_value = $this->_service->normalizeFieldValue($field);
+        $event->setValue($normalized_value);
+
+        // Allow third party code to apply their normalization routines.
         $this->_dispatcher->dispatch(SearchEvents::FIELD_NORMALIZE, $event);
 
         return $event->getValue();

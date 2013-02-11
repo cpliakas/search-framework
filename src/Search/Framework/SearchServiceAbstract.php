@@ -36,6 +36,13 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     protected $_config;
 
     /**
+     * Associative array of normalizers keyed by the data type.
+     *
+     * @var array
+     */
+    protected $_normalizers = array();
+
+    /**
      * An array of SearchServiceCollection objects that are associated with this
      * search service.
      *
@@ -49,6 +56,13 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      * @var SearchSchema
      */
     protected $_schema;
+
+    /**
+     * A key / value cache of field IDs to data types.
+     *
+     * @var array
+     */
+    protected $_fieldTypes = array();
 
     /**
      * The global dispatcher object.
@@ -134,10 +148,8 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      * @param array $endpoints
      *   The endpoint(s) that the client library will use to communicate with
      *   the search service.
-     * @param array $options
-     *   An associative array of search service specific options.
      */
-    abstract public function init(array $endpoints, array $options);
+    abstract public function init(array $endpoints);
 
     /**
      * Returns a search index document object specific to the extending backend.
@@ -165,6 +177,49 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     public function newField($id, $value, $name = null)
     {
         return new SearchIndexField($id, $value, $name);
+    }
+
+    /**
+     * Attaches a mormalizer that is applied to fields of the given data type.
+     *
+     * @param string $type
+     *   The data type the normalizer is applied to.
+     * @param SearchNormalizerInterface $normalizer
+     *   The normaizer that is applied to fields of the given data type.
+     *
+     * @return SearchServiceAbstract
+     */
+    public function attachNormalizer($type, SearchNormalizerInterface $normalizer)
+    {
+        $this->_normalizers[$type] = $normalizer;
+        return $this;
+    }
+
+    /**
+     * Returns a mormalizer that is applied to fields of the given data type.
+     *
+     * @param string $type
+     *   The data type the normalizer is applied to.
+     *
+     * @return SearchNormalizerInterface|false
+     */
+    public function getNormalizer($type)
+    {
+        return isset($this->_normalizers[$type]) ? $this->_normalizers[$type] : false;
+    }
+
+    /**
+     * Removes a normaizer that is applied to fields of the given data type.
+     *
+     * @param string $type
+     *   The data type the normalizer is applied to.
+     *
+     * @return SearchServiceAbstract
+     */
+    public function removeNormalizer($type)
+    {
+        unset($this->_normalizers[$type]);
+        return $this;
     }
 
     /**
@@ -231,6 +286,9 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      * Returns the merged schema for all collections associated with this search
      * service.
      *
+     * This method also populates the SearchServiceAbstract::_fieldTypes
+     * property.
+     *
      * @throws \InvalidArgumentException
      *   Thrown when there are schema incompatibilities.
      */
@@ -238,42 +296,71 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     {
         if (!$this->_schema) {
 
-            $schema_options = array();
+            $fused_options = array();
             foreach ($this->_collections as $collection) {
 
                 // Loads schema and throws the SearchEvents::SCHEMA_ALTER event.
                 $schema = clone $collection->getSchema();
                 $event = new SearchSchemaEvent($this, $collection, $schema);
                 $this->_dispatcher->dispatch(SearchEvents::SCHEMA_ALTER, $event);
-                $cur_options = $schema->toArray();
+                $schema_options = $schema->toArray();
 
                 // Just set the schema options on the first pass.
-                if (!$schema_options) {
-                    $schema_options = $cur_options;
+                if (!$fused_options) {
+                    $fused_options = $schema_options;
                     continue;
                 }
 
                 // The unique field must be the same across collections.
-                if ($cur_options['unique_field'] != $schema_options['unique_field']) {
+                if ($schema_options['unique_field'] != $fused_options['unique_field']) {
                     $message = 'Collections must have the same unique field.';
                     throw new \InvalidArgumentException($message);
                 }
 
                 // Define the field or check for field incompatibilities.
-                foreach ($cur_options['fields'] as $field_id => $field_options) {
-                    if (!isset($schema_options['fields'][$field_id])) {
-                        $schema_options['fields'][$field_id] = $field_options;
-                    } elseif ($schema_options['fields'][$field_id] != $field_options) {
+                foreach ($schema_options['fields'] as $field_id => $field_options) {
+                    if (!isset($fused_options['fields'][$field_id])) {
+                        $fused_options['fields'][$field_id] = $field_options;
+                    } elseif ($fused_options['fields'][$field_id] != $field_options) {
                         $message = 'Field definitions for "'. $field_id . '"must match.';
                         throw new \InvalidArgumentException($message);
                     }
                 }
             }
 
-            $this->_schema = new SearchSchema($schema_options);
+            // Set the fused schema.
+            $this->_schema = new SearchSchema($fused_options);
+
+            // Populate the field type cache.
+            foreach ($this->_schema as $id => $field) {
+                $this->_fieldTypes[$id] = $field->getType();
+            }
         }
 
         return $this->_schema;
+    }
+
+    /**
+     * Apply the serivce specific normalizers to a field's value.
+     *
+     * @param SearchIndexField $field
+     *   The field being normalized.
+     *
+     * @return string
+     */
+    public function normalizeFieldValue(SearchIndexField $field)
+    {
+        $id = $field->getId();
+        $value = $field->getValue();
+
+        // Check if we can determine the data type of the field and that a
+        // normalizer is associated with the type.
+        if (isset($this->_fieldTypes[$id]) && isset($this->_normalizers[$this->_fieldTypes[$id]])) {
+            $normalizer = $this->_normalizers[$this->_fieldTypes[$id]];
+            $value = $normalizer->normalize($value);
+        }
+
+        return $value;
     }
 
     /**
@@ -305,6 +392,10 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     public function indexQueuedItems()
     {
         try {
+            // Ensure the schema object is populated. This routine will also
+            // throw the SearchEvents::SCHEMA_ALTER event and detect
+            // incompatible collection schemata.
+            $this->getSchema();
 
             // Adds the service instance as a subscriber only for the duration
             // of the indexing process.

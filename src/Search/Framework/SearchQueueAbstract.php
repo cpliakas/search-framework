@@ -9,7 +9,7 @@
 namespace Search\Framework;
 
 /**
- * Interface for classes that interact with a queue.
+ * Base class for interacting with a queue.
  *
  * Iterating over an instance of this class fetches messages from the queue
  * until the thresholds set in the collection are met or there are no more
@@ -147,7 +147,7 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      */
     public function getTimeout()
     {
-        return $this->_config->getOption('timeout', static::$_defaultTimeout);
+        return $this->_timeout;
     }
 
     /**

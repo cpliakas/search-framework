@@ -37,7 +37,7 @@ class SearchQueueConsumerIterator extends SearchQueueIteratorAbstract
     {
         $this->_queue = $queue;
         $this->_limit = $queue->getLimit();
-        $this->_timeout = $queue->getLimit();
+        $this->_timeout = $queue->getTimeout();
     }
 
     /**
