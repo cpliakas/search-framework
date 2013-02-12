@@ -20,6 +20,14 @@ use Symfony\Component\Yaml\Yaml;
 class SearchConfig
 {
     /**
+     * An instance of the configurable object that configurations are being
+     * loaded for.
+     *
+     * @var SearchConfigurableInterface
+     */
+    protected $_configurable;
+
+    /**
      * An associative array of configuration options usually passed through the
      * constructor and optionally loaded from a YAML configuration file.
      *
@@ -66,9 +74,53 @@ class SearchConfig
      *   Configuration options passed at runtime that will override any
      *   configurations loaded via YAML files or an external sources.
      */
-    public function __construct(array $options = array())
+    public function __construct(SearchConfigurableInterface $configurable, array $options = array())
     {
+        $this->_configurable = $configurable;
         $this->_options = $options;
+    }
+
+    /**
+     * Adds a directory that will be scanned for YAML configuration files.
+     *
+     * Directories are added in a FILO manner, meaning the directories added
+     * last are scanned first.
+     *
+     * @param array $directory
+     *   Adds a directory that will be scanned for YAML configuration files.
+     */
+    public static function addConfigDir($directory)
+    {
+        if ($realpath = realpath($directory)) {
+            self::$_configDirs[] = $realpath;
+        }
+    }
+
+    /**
+     * Sets the directories that will be scanned for YAML configuration files.
+     *
+     * Directories are stored in a FILO manner, meaning the directories at the
+     * end of the array are scanned first.
+     *
+     * @param array $directories
+     *   The directories that will be scanned for YAML configuration files.
+     */
+    public static function setConfigDirs(array $directories)
+    {
+        foreach ($directories as $directory) {
+            self::addConfigDir($directory);
+        }
+    }
+
+    /**
+     * Returns the directories that will be scanned for YAML configuration
+     * files.
+     *
+     * @return array
+     */
+    public static function getConfigDirs()
+    {
+        return self::$_configDirs;
     }
 
     /**
@@ -114,69 +166,24 @@ class SearchConfig
     }
 
     /**
-     * Sets the directories that will be scanned for YAML configuration files.
-     *
-     * Directories are stored in a FILO manner, meaning the directories at the
-     * end of the array are scanned first.
-     *
-     * @param array $directories
-     *   The directories that will be scanned for YAML configuration files.
-     */
-    public static function setConfigDirs(array $directories)
-    {
-        foreach ($directories as $directory) {
-            self::addConfigDir($directory);
-        }
-    }
-
-    /**
-     * Adds a directory that will be scanned for YAML configuration files.
-     *
-     * Directories are added in a FILO manner, meaning the directories added
-     * last are scanned first.
-     *
-     * @param array $directory
-     *   Adds a directory that will be scanned for YAML configuration files.
-     */
-    public static function addConfigDir($directory)
-    {
-        if ($realpath = realpath($directory)) {
-            self::$_configDirs[] = $realpath;
-        }
-    }
-
-    /**
-     * Returns the directories that will be scanned for YAML configuration
-     * files.
-     *
-     * @return array
-     */
-    public static function getConfigDirs()
-    {
-        return self::$_configDirs;
-    }
-
-    /**
-     * Returns a project's root directory.
-     *
-     * @param SearchConfigurableInterface $configurable
-     *   An instance of the configurable class.
+     * Returns the root directory of the project containing the configurable
+     * object's class.
      *
      * @return string
      *   The relative path to the root directory.
      */
-    public function getRootDir(SearchConfigurableInterface $configurable)
+    public function getRootDir()
     {
-        $reflection = new \ReflectionClass($configurable);
+        $reflection = new \ReflectionClass($this->_configurable);
         $class_dir = dirname($reflection->getFileName());
         return $class_dir . '/../../../..';
     }
 
     /**
      * Returns the path to the directory containing the default configuration
-     * file for the configurable class.
+     * file related to the configurable object's class.
      *
-     * The following directory structure is expected in the library's root:
+     * The following directory structure is expected in the project's root:
      *
      * `{src-dir}/conf/{mapped-subdir}`
      *
@@ -184,34 +191,28 @@ class SearchConfig
      * - {mapped-subdir}: The subdirectory mapped from the class. See the
      *   self::mapSubDirectory() method for the class mappings.
      *
-     * @param SearchConfigurableInterface $configurable
-     *   An instance of the configurable class.
-     *
      * @return string|false
      *   The absolute path to the `{src-dir}/conf` directory, false if the
      *   directory doesn't exist or couldn't be resolved.
      */
-    public function getDefaultConfigDir(SearchConfigurableInterface $configurable)
+    public function getDefaultConfigDir()
     {
-        $root_dir = self::getRootDir($configurable);
+        $root_dir = self::getRootDir($this->_configurable);
         return realpath($root_dir . '/conf');
     }
 
     /**
      * Maps a class to a subdirectory containing the configuration files.
      *
-     * @param SearchConfigurableInterface $configurable
-     *   The configurable object that configurations are being retrieved for.
-     *
      * @return string
      */
-    public function mapSubDirectory(SearchConfigurableInterface $configurable)
+    public function mapSubDirectory()
     {
         switch (true) {
-            case $configurable instanceof SearchCollectionAbstract:
+            case $this->_configurable instanceof SearchCollectionAbstract:
                return '/collection';
 
-            case $configurable instanceof SearchServiceAbstract:
+            case $this->_configurable instanceof SearchServiceAbstract:
                return '/service';
 
             default:
@@ -227,18 +228,15 @@ class SearchConfig
      * are loaded during this event, processing stops and the directories are
      * not scanned for configuration files.
      *
-     * @param SearchConfigurableInterface $configurable
-     *   The configurable object that configurations are being parsed for.
-     *
      * @return SearchConfig
      *
      * @throws ParseException
      */
-    public function load(SearchConfigurableInterface $configurable)
+    public function load()
     {
-        $conf_dir = $this->getDefaultConfigDir($configurable);
-        $subdir = $this->mapSubDirectory($configurable);
-        $filename = $configurable->getConfigBasename() . '.yml';
+        $conf_dir = $this->getDefaultConfigDir();
+        $subdir = $this->mapSubDirectory();
+        $filename = $this->_configurable->getConfigBasename() . '.yml';
 
         // Prepend the default directory to the stack of of directories.
         $config_dirs = self::getConfigDirs();
@@ -257,7 +255,7 @@ class SearchConfig
 
         // If no options were loaded, scan the files in the config directories.
         if (!$options) {
-            $options = self::scanConfigDirs($filename, $config_dirs);
+            $options = $this->scanConfigDirs($filename, $config_dirs);
         }
 
         // In this case, the runtime configs are passed as the "new" argument
@@ -288,7 +286,7 @@ class SearchConfig
      *
      * @throws ParseException
      */
-    public static function scanConfigDirs($filename, array $config_dirs)
+    public function scanConfigDirs($filename, array $config_dirs)
     {
         foreach (array_reverse($config_dirs) as $config_dir) {
             $filepath = $config_dir . '/' . $filename;

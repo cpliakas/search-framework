@@ -159,8 +159,8 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
     {
         $this->_id = $id;
 
-        $this->_config = new SearchConfig($options);
-        $this->_config->load($this);
+        $this->_config = new SearchConfig($this, $options);
+        $this->_config->load();
 
         if ($type = $this->_config->getOption('type')) {
             $this->_type = $type;

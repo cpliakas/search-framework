@@ -106,8 +106,8 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
             }
         }
 
-        $this->_config = new SearchConfig($options);
-        $this->_config->load($this);
+        $this->_config = new SearchConfig($this, $options);
+        $this->_config->load();
 
         $this->_dispatcher = SearchRegistry::getDispatcher();
         $this->_queue = SearchRegistry::getQueue();
