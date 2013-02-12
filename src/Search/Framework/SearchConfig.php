@@ -198,21 +198,6 @@ class SearchConfig
     }
 
     /**
-     * Helper method for dispatching a configuration related event.
-     *
-     * @param string $event_name
-     *   The name of the event being thrown.
-     * @param SearchConfigEvent $event
-     *   The SearchConfigEvent event object passed to the handlers / listeners.
-     *
-     * @see Symfony::Component::EventDispatcher::EventDispatcher::dispatch().
-     */
-    public function dispatchEvent($event_name, SearchConfigEvent $event)
-    {
-        SearchRegistry::getDispatcher()->dispatch($event_name, $event);
-    }
-
-    /**
      * Maps a class to a subdirectory containing the configuration files.
      *
      * @param SearchConfigurableInterface $configurable
@@ -253,7 +238,7 @@ class SearchConfig
     {
         $conf_dir = $this->getDefaultConfigDir($configurable);
         $subdir = $this->mapSubDirectory($configurable);
-        $filename = $configurable->getId() . '.yml';
+        $filename = $configurable->getConfigBasename() . '.yml';
 
         // Prepend the default directory to the stack of of directories.
         $config_dirs = self::getConfigDirs();
@@ -267,7 +252,7 @@ class SearchConfig
         // Throw the SearchEvents::CONFIG_LOAD event to load the configurations
         // from some other source.
         $event = new SearchConfigEvent($this, $filename, $config_dirs);
-        $this->dispatchEvent(SearchEvents::CONFIG_LOAD, $event);
+        SearchRegistry::getDispatcher()->dispatch(SearchEvents::CONFIG_LOAD, $event);
         $options = $event->getOptions();
 
         // If no options were loaded, scan the files in the config directories.

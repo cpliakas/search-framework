@@ -59,7 +59,7 @@ use Search\Service\Solr\SolrSearchService;  // @see https://github.com/cpliakas/
 require 'vendor/autoload.php';
 
 // Instantiate a collection that references Drupal Planet feeds.
-$drupal_planet = new FeedCollection();
+$drupal_planet = new FeedCollection('feed.drupal');
 $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
 
 // Connect to a Solr server.

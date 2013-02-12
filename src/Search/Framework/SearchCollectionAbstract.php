@@ -36,33 +36,37 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
     const NO_LIMIT = -1;
 
     /**
-     * The unique identifier of the extending collection class.
+     * The type of content in the collection.
      *
-     * It is best practice to use only lowercase letters, numbers, dots (.),
-     * and underscores (_). Examples might be "feed", "drupal.entity.node".
-     *
-     * @var string
-     */
-    protected static $_id = '';
-
-    /**
-     * The type of content contained in this resource that this collection
-     * references.
+     * This property is intended to be overridden by the extending class but
+     * can be modified at runtime. It is also acceptable for instances of
+     * different collections classes to share the same type, however their
+     * schemata should be compatible and near-identical. For example, a
+     * collection of rss feeds and a collection of podcasts might both use the
+     * "feeds" type if they share the same schema structure.
      *
      * It is best practice to use only lowercase letters, numbers, dots (.),
      * and underscores (_). Examples might be "feeds", "database.db_name".
      *
-     * Types can be shared by multiple collection classes and instances, but
-     * their defined schemas should be compatible.
-     *
-     * This value is also used by backends such as Elasticsearch to determine
-     * the mapping that is applied to the document being indexed, hence why it
-     * is important that the schemas are compatible when this value is shared
+     * This value is used by backends such as Elasticsearch to determine the
+     * mapping that is applied to the document being indexed, hence why it is
+     * important that the schemas are compatible when this value is shared
      * across multiple instances.
      *
      * @var string
      */
     protected $_type = '';
+
+    /**
+     * The basename of the configuration file with the ".yml" excluded.
+     *
+     * This property is intended to be overridden by the extending class and
+     * should be shared across all instances of the same collection class. It is
+     * returned by the SearchCollectionAbstract::getConfigBasename() method.
+     *
+     * @var string
+     */
+    protected static $_configBasename = '';
 
     /**
      * The default limit on how many items are processed during an operation.
@@ -93,6 +97,19 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
      * @var int
      */
     protected static $_defaultTimeout = self::NO_LIMIT;
+
+    /**
+     * The unique identifier of the collection instance.
+     *
+     * This value must be unique across all collection instances.
+     *
+     * It is best practice to use only lowercase letters, numbers, dots (.),
+     * and underscores (_). Examples might be "feed", "feed.tech", "feed.news",
+     * or "drupal.entity.node".
+     *
+     * @var string
+     */
+    protected $_id;
 
     /**
      * Parses and stores the configuration options set for this collection
@@ -130,14 +147,18 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
      * Reads configuration file and instantiates the SearchSchema object from
      * the configs loaded in the "schema" key.
      *
+     * @param string $id
+     *   The unique identifier of the collection instance.
      * @param array $options
      *   An associative array of configuration options that override that values
      *   read from the configuration file.
      *
      * @throws ParseException
      */
-    public function __construct(array $options = array())
+    public function __construct($id, array $options = array())
     {
+        $this->_id = $id;
+
         $this->_config = new SearchConfig($options);
         $this->_config->load($this);
 
@@ -243,16 +264,6 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
     }
 
     /**
-     * Implements SearchConfigurableInterface::getId().
-     *
-     * @see SearchCollectionAbstract::_id
-     */
-    public function getId()
-    {
-        return static::$_id;
-    }
-
-    /**
      * Implements SearchConfigurableInterface::getConfig().
      *
      * @see SearchCollectionAbstract::_config
@@ -260,6 +271,28 @@ abstract class SearchCollectionAbstract implements SearchConfigurableInterface, 
     public function getConfig()
     {
         return $this->_config;
+    }
+
+    /**
+     * Implements SearchConfigurableInterface::getConfigBasename().
+     *
+     * @see SearchCollectionAbstract::_configBasename
+     */
+    public function getConfigBasename()
+    {
+        return static::$_configBasename;
+    }
+
+    /**
+     * Returns the unique identifier of the collection instance.
+     *
+     * @return string
+     *
+     * @see SearchCollectionAbstract::_id
+     */
+    public function getId()
+    {
+        return $this->_id;
     }
 
     /**

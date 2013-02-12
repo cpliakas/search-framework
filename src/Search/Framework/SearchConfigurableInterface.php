@@ -18,16 +18,13 @@ namespace Search\Framework;
 interface SearchConfigurableInterface
 {
     /**
-     * Returns the unique identifier of the configurable class.
+     * Returns the basename of the configuration file with the ".yml" excluded.
      *
-     * The identifier should be unique across all children of a parent class.
-     * For example, all SearchCollectionAbstract classes should have unique
-     * identifiers, but it is valid for a SearchCollectionAbstract class to have
-     * the same identifier as a SearchServiceAbstract class.
+     * For example, returning "feed" will scan for "feed.yml" files.
      *
      * @return string
      */
-    public function getId();
+    public function getConfigBasename();
 
     /**
      * Returns an instance of SearchConfig containing the configuration options

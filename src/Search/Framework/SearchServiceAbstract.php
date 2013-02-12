@@ -19,14 +19,15 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 abstract class SearchServiceAbstract implements EventSubscriberInterface, SearchConfigurableInterface
 {
     /**
-     * The unique identifier of the service class.
+     * The basename of the configuration file with the ".yml" excluded.
      *
-     * It is best practice to use only lowercase letters, numbers, dots (.),
-     * and underscores (_).
+     * This property is intended to be overridden by the extending class and
+     * should be shared across all instances of the same collection class. It is
+     * returned by the SearchCollectionAbstract::getConfigBasename() method.
      *
      * @var string
      */
-    protected static $_id = '';
+    protected static $_configBasename = '';
 
     /**
      * Object populated with configuration options set for this instance.
@@ -127,19 +128,19 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
     }
 
     /**
-     * Implements SearchConfigurableInterface::id().
-     */
-    public function getId()
-    {
-        return static::$_id;
-    }
-
-    /**
      * Implements SearchConfigurableInterface::getConfig().
      */
     public function getConfig()
     {
         return $this->_config;
+    }
+
+    /**
+     * Implements SearchConfigurableInterface::getConfigBasename().
+     */
+    public function getConfigBasename()
+    {
+        return static::$_configBasename;
     }
 
     /**
@@ -231,13 +232,35 @@ abstract class SearchServiceAbstract implements EventSubscriberInterface, Search
      *   The collection being associated with this search service.
      *
      * @return SearchServiceAbstract
+     *
+     * @throws \InvalidArgumentException
+     *   Thrown when a collection with this ID is already attached.
      */
     public function attachCollection(SearchCollectionAbstract $collection)
     {
         $this->_schema = null;
         $id = $collection->getId();
+
+        if (isset($this->_collections[$id])) {
+            $message = 'Collection already attached to this service: ' . $id;
+            throw new \InvalidArgumentException($message);
+        }
+
         $this->_collections[$id] = $collection;
         return $this;
+    }
+
+    /**
+     * Returns a true if a collection with the passed identifier is attached.
+     *
+     * @param string $id
+     *   The unique identifier of the collection.
+     *
+     * @return boolean
+     */
+    public function hasCollection($id)
+    {
+        return isset($this->_collections[$id]);
     }
 
     /**
