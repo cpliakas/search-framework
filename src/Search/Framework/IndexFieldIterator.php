@@ -104,6 +104,6 @@ class IndexFieldIterator implements \Iterator
      */
     public function current()
     {
-        $this->_indexer->normalizeField($this->_field);
+        return $this->_indexer->normalizeField($this->_field);
     }
 }

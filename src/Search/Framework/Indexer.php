@@ -83,7 +83,7 @@ class Indexer extends CollectionAgentAbstract
      */
     public function newCollector()
     {
-        $collector = new Collector($this->_dispatcher);
+        $collector = new Collector($this->getDispatcher());
 
         // Pass services and settings to collector.
         $collector
@@ -112,11 +112,13 @@ class Indexer extends CollectionAgentAbstract
         $log = $this->getLogger();
         $context = array('field' => $id);
 
-        if (isset($this->_fieldTypes[$id]) && $this->_searchEngine->hasNormalizer($this->_fieldTypes[$id])) {
-            $normalizer = $this->_searchEngine->getNormalizer($this->_fieldTypes[$id]);
-            $context['normalizer'] = get_class($normalizer);
-            $value = $normalizer->normalize($value);
-            $log->debug('Normalizer applied to field', $context);
+        if (isset($this->_fieldTypes[$id])) {
+            if ($this->_searchEngine->hasNormalizer($this->_fieldTypes[$id])) {
+                $normalizer = $this->_searchEngine->getNormalizer($this->_fieldTypes[$id]);
+                $context['normalizer'] = get_class($normalizer);
+                $value = $normalizer->normalize($value);
+                $log->debug('Normalizer applied to field', $context);
+            }
         } else {
             $log->debug('Data type could not be determined for field', $context);
         }
