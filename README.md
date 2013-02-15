@@ -66,7 +66,7 @@ $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
 $solr = new Solr(new SearchEngineEndpoint('local', 'http://localhost', '/solr', 8983));
 
 // Instantiate an indexer, attach the collection, and index it.
-$indexer = new Indexer(solr);
+$indexer = new Indexer($solr);
 $indexer->attachCollection($drupal_planet);
 $indexer->index();
 
@@ -84,8 +84,8 @@ use Search\Engine\Elasticsearch\Elasticsearch;
 // Connect an Elasticsearch server.
 $elasticsearch = new Elasticsearch($new SearchEngineEndpoint('local', 'localhost', 'feeds', 9200));
 
-// Only difference is that Elasicsearch requires the index is created.
-$indexer = new Indexer(solr);
+// The only difference is that Elasicsearch requires that the index is created.
+$indexer = new Indexer($elasticsearch);
 $indexer->attachCollection($drupal_planet);
 $indexer->createIndex();
 $indexer->index();
