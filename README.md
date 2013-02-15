@@ -81,7 +81,7 @@ code above.
 
 ```php
 
-use Search\Engine\Solr\Solr;  // @see https://github.com/cpliakas/solr-search-service
+use Search\Engine\Solr\Solr;  // @see https://github.com/cpliakas/solr-search-engine
 
 // Connect a  Solr server and pass it to the indexer.
 $solr = new Solr(new SearchEngineEndpoint('local', 'http://localhost', '/solr', 8983));
