@@ -48,47 +48,45 @@ operations while allowing the backend clients to do what they do best.
 Basic Usage
 ===========
 
-The code below indexes the "Drupal Planet" RSS feed into Solr.
+The code below indexes the "Drupal Planet" RSS feed into Elasticsearch.
 
 ```php
 
+use Search\Framework\Indexer;
 use Search\Framework\SearchServiceEndpoint;
-use Search\Collection\Feed\FeedCollection;  // @see https://github.com/cpliakas/feed-collection
-use Search\Engine\Solr\Solr;  // @see https://github.com/cpliakas/solr-search-service
+
+use Search\Collection\Feed\FeedCollection;     // @see https://github.com/cpliakas/feed-collection
+use Search\Engine\Elasticsearch\Elasticsearch; // @see https://github.com/cpliakas/elasticsearch-engine
 
 require 'vendor/autoload.php';
 
-// Instantiate a collection that references Drupal Planet feeds.
+// Instantiate a collection that references the Drupal Planet feed. Collections
+// are simply connectors to and models of the source data being indexed.
 $drupal_planet = new FeedCollection('feed.drupal');
 $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
 
-// Connect to a Solr server.
-$solr = new Solr(new SearchEngineEndpoint('local', 'http://localhost', '/solr', 8983));
+// Connect to an Elasticsearch server.
+$elasticsearch = new Elasticsearch(new SearchEngineEndpoint('local', 'localhost', 'feeds', 9200));
 
 // Instantiate an indexer, attach the collection, and index it.
-$indexer = new Indexer($solr);
-$indexer->attachCollection($drupal_planet);
-$indexer->index();
-
-
-```
-
-How about indexing the data into Elasticsearch? Simply swap out the search
-engine in the code above.
-
-```php
-
-// @see https://github.com/cpliakas/elasticsearch-service
-use Search\Engine\Elasticsearch\Elasticsearch;
-
-// Connect an Elasticsearch server.
-$elasticsearch = new Elasticsearch($new SearchEngineEndpoint('local', 'localhost', 'feeds', 9200));
-
-// The only difference is that Elasicsearch requires that the index is created.
 $indexer = new Indexer($elasticsearch);
 $indexer->attachCollection($drupal_planet);
 $indexer->createIndex();
 $indexer->index();
+
+```
+
+How about indexing the data into Solr? Simply swap out the search engine in the
+code above.
+
+```php
+
+use Search\Engine\Solr\Solr;  // @see https://github.com/cpliakas/solr-search-service
+
+// Connect a  Solr server and pass it to the indexer.
+$solr = new Solr(new SearchEngineEndpoint('local', 'http://localhost', '/solr', 8983));
+
+$indexer = new Indexer($solr);
 
 ```
 
