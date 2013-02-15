@@ -14,22 +14,17 @@ namespace Search\Framework;
 final class SearchEvents
 {
     /**
-     * Event thrown prior to queuing the items scheduled for indexing.
+     * Event thrown prior to the collector executing the queuing operation for
+     * all collections that are attached to it.
      */
-    const COLLECTION_PRE_QUEUE = 'search.collection.pre_queue';
+    const COLLECTOR_PRE_QUEUE = 'search.collector.pre_queue';
 
     /**
-     * Event thrown after the the items scheduled for indexing have been queued.
-     */
-    const COLLECTION_POST_QUEUE = 'search.collection.post_queue';
-
-    /**
-     * Event thrown prior to loading configurations from files.
+     * Event thrown prior to loading a schema configuration.
      *
-     * This is most often implemented by caching backends to prevent reading the
-     * config files on every pageload.
+     * This method can be used to load the configs from an alternate source.
      */
-    const CONFIG_LOAD = 'search.config.load';
+    const SCHEMA_LOAD = 'search.schema.load';
 
     /**
      * Event thrown that allows for the altering of each collection's schema
@@ -41,33 +36,28 @@ final class SearchEvents
     const SCHEMA_ALTER = 'search.schema.alter';
 
     /**
+     * Event thrown prior to queuing the items in a collection that are
+     * scheduled for indexing.
+     */
+    const COLLECTION_PRE_QUEUE = 'search.collection.pre_queue';
+
+    /**
+     * Event thrown after to the items in a collection that are scheduled for
+     * indexing have been queued.
+     */
+    const COLLECTION_POST_QUEUE = 'search.collection.post_queue';
+
+    /**
+     * Event thrown prior after the collector has finished executing the queuing
+     * operation for all collections that are attached to it.
+     */
+    const COLLECTOR_POST_QUEUE = 'search.collector.post_queue';
+
+    /**
      * Event thrown prior to a service consuming items in the queue for
      * indexing.
      */
-    const SERVICE_PRE_INDEX = 'search.service.pre_index';
-
-    /**
-     * Event thrown after a field is extracted from the source data and added to
-     * the document.
-     *
-     * This event is intended to add metadata to the field or add additional
-     * fields based on the field data being processed. If can also be used to
-     * change the name of the field as it is stored in the index.
-     *
-     * @var string
-     */
-    const FIELD_ENRICH = 'search.field.enrich';
-
-    /**
-     * Event thrown when the backend retrieves the value for indexing.
-     *
-     * This event is intended to be used to clean and normalize the content in
-     * order to prepare it for indexing. When possible, the native normalization
-     * mechanisms provided by the backend should be used in favor of this event.
-     *
-     * @var string
-     */
-    const FIELD_NORMALIZE = 'search.field.normalize';
+    const SEARCH_ENGINE_PRE_INDEX = 'search.search_engine.pre_index';
 
     /**
      * Event thrown after a document was populated with fields and prior to it
@@ -87,5 +77,5 @@ final class SearchEvents
     /**
      * Event thrown after the indexing operation has completed.
      */
-    const SERVICE_POST_INDEX = 'search.service.post_index';
+    const SEARCH_ENGINE_POST_INDEX = 'search.search_engine.post_index';
 }

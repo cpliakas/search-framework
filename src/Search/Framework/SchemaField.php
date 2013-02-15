@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  * Models a field in the collection's schema.
  */
-class SearchSchemaField
+class SchemaField
 {
 
     const TYPE_STRING = 'string';
@@ -99,7 +99,7 @@ class SearchSchemaField
     protected $_isMultiValued = false;
 
     /**
-     * Constructs a SearchSchemaField object.
+     * Constructs a SchemaField object.
      *
      * @param string $id
      *   The unique identifier of this field. The name of the field stored in
@@ -161,14 +161,14 @@ class SearchSchemaField
      * The schema is required so that its internal hash table can be updated to
      * reflect the field's new identifier.
      *
-     * @param SearchSchema $schema
+     * @param Schema $schema
      *   The schema that this field is attached to.
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
-    public function setId(SearchSchema $schema, $id)
+    public function setId(Schema $schema, $id)
     {
         $reset_unique_field = ($schema->getUniqueFieldId() === $this->_id);
 
@@ -201,14 +201,14 @@ class SearchSchemaField
      * The schema is required so that its internal hash table can be updated to
      * reflect the field's new identifier.
      *
-     * @param SearchSchema $schema
+     * @param Schema $schema
      *   The schema that this field is attached to.
      * @param string $name
      *   The name of the field as stored in the index.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
-    public function setName(SearchSchema $schema, $name)
+    public function setName(Schema $schema, $name)
     {
         $schema->removeField($this->_id);
         $this->_name = $name;
@@ -232,7 +232,7 @@ class SearchSchemaField
      * @param string $label
      *   The field's human readable label.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
     public function setLabel($label)
     {
@@ -256,7 +256,7 @@ class SearchSchemaField
      * @param string $description
      *   The field's long description.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
     public function setDescription($description)
     {
@@ -270,7 +270,7 @@ class SearchSchemaField
      * @param string $type
      *   The field's data type.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
     public function setType($type)
     {
@@ -294,7 +294,7 @@ class SearchSchemaField
      * @param string $size
      *    The size that is related to the data type.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
     public function setSize($size)
     {
@@ -352,7 +352,7 @@ class SearchSchemaField
      * @param boolean $index
      *   A flag that determines whether the field's data is indexed.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
     public function indexData($index = true)
     {
@@ -377,7 +377,7 @@ class SearchSchemaField
      *   A flag that determines whether the field's data is stored in the index,
      *   defaults to true.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
     public function storeData($store = true)
     {
@@ -401,7 +401,7 @@ class SearchSchemaField
      * @param boolean $multivalue
      *   A flag that determines whether the field's data is multivalued.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      */
     public function allowMultipleValues($multivalue = true)
     {

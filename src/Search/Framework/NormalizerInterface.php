@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  *
  */
-interface SearchNormalizerInterface
+interface NormalizerInterface
 {
     /**
      * Normalizes a value.

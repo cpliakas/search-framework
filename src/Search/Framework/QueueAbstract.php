@@ -17,7 +17,7 @@ namespace Search\Framework;
  *
  * @see http://www.rabbitmq.com/tutorials/amqp-concepts.html
  */
-abstract class SearchQueueAbstract implements \IteratorAggregate
+abstract class QueueAbstract
 {
     /**
      * The name of the default queue.
@@ -27,19 +27,8 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
     protected static $_defaultQueue = 'default';
 
     /**
-     *
-     * @var int
-     */
-    protected $_limit = 200;
-
-    /**
-     *
-     * @var int
-     */
-    protected $_timeout = 30;
-
-    /**
-     * The name of the search index queue.
+     * The name of the indexing queue that messages are being published to and
+     * consumed from.
      *
      * @var string
      */
@@ -54,12 +43,11 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
     protected $_consumedMessages = array();
 
     /**
-     * Constructs a SearchQueueAbstract object.
+     * Constructs an QueueAbstract object.
      *
-     * @param SearchCollectionAbstract $collection
-     *   The collection containing the source data being acted on.
      * @param string $name
-     *   The name of the search index queue.
+     *   The name of the indexing queue that messages are being published to and
+     *   consumed from.
      */
     public function __construct($name = null)
     {
@@ -67,23 +55,12 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
     }
 
     /**
-     * Implements \IteratorAggregate::getIterator().
-     *
-     * Returns an iterator containing a collection of SearchQueueMessage
-     * objects fetched from the queue.
-     *
-     * @return SearchQueueConsumerIterator
-     */
-    public function getIterator()
-    {
-        return new SearchQueueConsumerIterator($this);
-    }
-
-    /**
+     * Sets the name of the indexing queue that messages are being published to
+     * and consumed from.
      *
      * @param string $name
-     *
-     *
+     *   The name of the indexing queue that messages are being published to and
+     *   consumed from.
      */
     public static function setDefaultQueue($name)
     {
@@ -91,6 +68,8 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
     }
 
     /**
+     * Returns the name of the indexing queue that messages are being published
+     * to and consumed from.
      *
      * @return string
      */
@@ -100,78 +79,17 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
     }
 
     /**
-     * Sets the maximum number of documents that are processed during indexing
-     * and queuing operations.
-     *
-     * @param int $limit
-     *   The maximum number of documents to process
-     *
-     * @return SearchCollectionAbstract
-     */
-    public function setLimit($limit)
-    {
-        $this->_limit = $limit;
-        return $this;
-    }
-
-    /**
-     * Gets that maximum number of documents that are processed during indexing
-     * operation.
-     *
-     * @return int
-     */
-    public function getLimit()
-    {
-        return $this->_timeout;
-    }
-
-    /**
-     * Sets the timeout in seconds for the indexing operations.
-     *
-     * @param int $timeout
-     *   The the maximum amount of time in seconds allowed for the indexing and
-     *   queuing operations.
-     *
-     * @return SearchCollectionAbstract
-     */
-    public function setTimeout($timeout)
-    {
-        $this->_timeout = $timeout;
-        return $this;
-    }
-
-    /**
-     * Returns the timeout in seconds for the indexing and queuing operations.
-     *
-     * @return int
-     */
-    public function getTimeout()
-    {
-        return $this->_timeout;
-    }
-
-    /**
-     * Returns the collection containing the source data being acted on.
-     *
-     * @return SearchCollectionAbstract
-     */
-    public function getName()
-    {
-        return $this->_name;
-    }
-
-    /**
      * Adds a message that was consumed after the last time acknowledgements
      * were sent to the broker.
      *
-     * @param SearchQueueMessage $message
+     * @param QueueMessage $message
      *   The message that was consumed.
      *
-     * @return SearchQueueAbstract
+     * @return QueueAbstract
      */
-    public function attachConsumedMessage(SearchQueueMessage $message)
+    public function attachConsumedMessage(QueueMessage $message)
     {
-        $this->_consumedMessage = $message;
+        $this->_consumedMessages[] = $message;
         return $this;
     }
 
@@ -190,7 +108,7 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      * Clears the messages that have been consumed since the last time
      * acknowledgements were sent to the broker.
      *
-     * @return SearchQueueAbstract
+     * @return QueueAbstract
      */
     public function clearConsumedMessages()
     {
@@ -204,25 +122,25 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      * This method is most often overridden by queue backends that require a
      * message class with backend specific functionality.
      *
-     * @return SearchQueueMessage
+     * @return QueueMessage
      */
     public function newMessage()
     {
-        return new SearchQueueMessage($this);
+        return new QueueMessage($this);
     }
 
     /**
      * Sends an item that is scheduled to be indexed to the queue.
      *
-     * @param SearchQueueMessage $message
+     * @param QueueMessage $message
      *   The message being sent to the queue.
      */
-    abstract public function publish(SearchQueueMessage $message);
+    abstract public function publish(QueueMessage $message);
 
     /**
      * Fetches an item that is scheduled to be indexed from the queue.
      *
-     * @return SearchQueueMessage|false
+     * @return QueueMessage|false
      *   The message fetched from the queue, false if there are no more messages
      *   to retrieve.
      */
@@ -232,7 +150,7 @@ abstract class SearchQueueAbstract implements \IteratorAggregate
      * Allows the consumer to send acknowledgements to the broker, usually
      * notifying it about which documents were processed.
      *
-     * Don't forget to call SearchQueueAbstract::clearConsumedMessages() so that
+     * Don't forget to call QueueAbstract::clearConsumedMessages() so that
      * we don't resend acknowledgements.
      *
      * @param boolean $success

@@ -11,9 +11,9 @@ namespace Search\Framework;
 /**
  * A single threaded, non-persistent queue system that serves as the producer,
  * broker and consumer. In other words, it just iterates over the items that are
- * scheduled for indexing.
+ * scheduled for indexing. That's our default "queue".
  */
-class SearchQueueIteratorQueue extends SearchQueueAbstract
+class IteratorQueue extends QueueAbstract
 {
     /**
      * An array of "published" messages.
@@ -25,17 +25,17 @@ class SearchQueueIteratorQueue extends SearchQueueAbstract
     protected $_messages = array();
 
     /**
-     * Implements SearchQueueAbstract::publish().
+     * Implements QueueAbstract::publish().
      *
      * Publishing is simply appending the message to the array iterator.
      */
-    public function publish(SearchQueueMessage $message)
+    public function publish(QueueMessage $message)
     {
         $this->_messages[] = $message;
     }
 
     /**
-     * Implements SearchQueueAbstract::consume().
+     * Implements QueueAbstract::consume().
      *
      * Set the zero-based key as the unique identifier prior to returning.
      */
@@ -50,7 +50,7 @@ class SearchQueueIteratorQueue extends SearchQueueAbstract
     }
 
     /**
-     * Implements SearchQueueAbstract::acknowledge().
+     * Implements QueueAbstract::acknowledge().
      *
      * On success, remove the consumed messages from the iterator.
      */

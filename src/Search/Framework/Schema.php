@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  * Models the schema from the field definitions in the collection.yml file.
  */
-class SearchSchema implements \IteratorAggregate
+class Schema implements \IteratorAggregate
 {
     /**
      * An associative array of fields keyed by their unique identifier.
@@ -41,32 +41,6 @@ class SearchSchema implements \IteratorAggregate
     protected $_defaultFields = array();
 
     /**
-     * Constructs a SearchSchema object.
-     *
-     * @param array $schema_options
-     *   The raw options parsed form the configuration file related to the
-     *   schema.
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function __construct(array $schema_options)
-    {
-        if (isset($schema_options['fields'])) {
-            if (!is_array($schema_options['fields'])) {
-                $message = 'Argument 1 passed to ' . __METHOD__ . ' must be an array.';
-                throw new \InvalidArgumentException($message);
-            }
-            foreach ($schema_options['fields'] as $id => $field_options) {
-                $this->attachField(new SearchSchemaField($id, $field_options));
-            }
-        }
-
-        if (isset($schema_options['unique_field'])) {
-            $this->_uniqueField = (string) $schema_options['unique_field'];
-        }
-    }
-
-    /**
      * Implements IteratorAggregate::getIterator().
      *
      * Returns the array of fields.
@@ -77,14 +51,40 @@ class SearchSchema implements \IteratorAggregate
     }
 
     /**
+     * Builds the schema from an array of options.
+     *
+     * @param array $options
+     *   The raw options parsed form the configuration file related to the
+     *   schema.
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function build(array $options)
+    {
+        if (isset($options['fields'])) {
+            if (!is_array($options['fields'])) {
+                $message = 'Argument 1 passed to ' . __METHOD__ . ' must be an array.';
+                throw new \InvalidArgumentException($message);
+            }
+            foreach ($options['fields'] as $id => $field_options) {
+                $this->attachField(new SchemaField($id, $field_options));
+            }
+        }
+
+        if (isset($options['unique_field'])) {
+            $this->setUniqueField($options['unique_field']);
+        }
+    }
+
+    /**
      * Associates a field with this schema.
      *
-     * @param SearchSchemaField $field
+     * @param SchemaField $field
      *   The field being associated with the schema.
      *
-     * @return SearchSchema
+     * @return Schema
      */
-    public function attachField(SearchSchemaField $field)
+    public function attachField(SchemaField $field)
     {
         $id = $field->getId();
         $name = $field->getName();
@@ -99,7 +99,7 @@ class SearchSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      *
      * @throw \InvalidArgumentException()
      */
@@ -128,7 +128,7 @@ class SearchSchema implements \IteratorAggregate
      * @param string $name
      *   The name of the field as stored in the index.
      *
-     * @return SearchSchemaField
+     * @return SchemaField
      *
      * @throws \InvalidArgumentException()
      */
@@ -144,12 +144,12 @@ class SearchSchema implements \IteratorAggregate
     /**
      * De-references a field from the schema.
      *
-     * @param SearchSchemaField $field
+     * @param SchemaField $field
      *   The field being detached.
      *
-     * @return SearchSchema
+     * @return Schema
      */
-    public function detachField(SearchSchemaField $field)
+    public function detachField(SchemaField $field)
     {
         return $this->removeField($field->getId());
     }
@@ -160,7 +160,7 @@ class SearchSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchSchema
+     * @return Schema
      */
     public function removeField($id)
     {
@@ -177,7 +177,7 @@ class SearchSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchSchema
+     * @return Schema
      */
     public function setUniqueField($id)
     {
@@ -201,7 +201,7 @@ class SearchSchema implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchSchema
+     * @return Schema
      */
     public function getUniqueField()
     {
@@ -241,7 +241,7 @@ class SearchSchema implements \IteratorAggregate
     /**
      * Returns a field by its unique identifier.
      *
-     * @see SearchSchema::getField()
+     * @see Schema::getField()
      */
     public function __get($id)
     {

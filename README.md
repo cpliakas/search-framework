@@ -54,7 +54,7 @@ The code below indexes the "Drupal Planet" RSS feed into Solr.
 
 use Search\Framework\SearchServiceEndpoint;
 use Search\Collection\Feed\FeedCollection;  // @see https://github.com/cpliakas/feed-collection
-use Search\Service\Solr\SolrSearchService;  // @see https://github.com/cpliakas/solr-search-service
+use Search\Engine\Solr\Solr;  // @see https://github.com/cpliakas/solr-search-service
 
 require 'vendor/autoload.php';
 
@@ -63,43 +63,33 @@ $drupal_planet = new FeedCollection('feed.drupal');
 $drupal_planet->setFeedUrl('http://drupal.org/planet/rss.xml');
 
 // Connect to a Solr server.
-$endpoint = new SearchServiceEndpoint('local', 'http://localhost', '/solr', 8983);
-$solr = new SolrSearchService($endpoint);
+$solr = new Solr(new SearchEngineEndpoint('local', 'http://localhost', '/solr', 8983));
 
-// Associate the collection with the Solr service.
-$solr->attachCollection($drupal_planet);
+// Instantiate an indexer, attach the collection, and index it.
+$indexer = new Indexer(solr);
+$indexer->attachCollection($drupal_planet);
+$indexer->index();
 
-// Index the feeds into Solr.
-$solr->index();
-
-// Once the data has been indexed, execute a search.
-$solr->search('drupal');
-
-// Wipe the index.
-$solr->delete();
 
 ```
 
-How about indexing the data into Elasticsearch? Modify the example above
-slightly to use the library that integrates with the Elasticsearch project.
+How about indexing the data into Elasticsearch? Simply swap out the search
+engine in the code above.
 
 ```php
 
 // @see https://github.com/cpliakas/elasticsearch-service
-use Search\Service\Elasticsearch\ElasticsearchService;
+use Search\Engine\Elasticsearch\Elasticsearch;
 
-// Connect to the Elasticsearch service and attach the collection.
-$endpoint = new SearchServiceEndpoint('local', 'localhost', 'feeds', 9200);
-$elasticsearch = new ElasticsearchService($endpoint);
-$elasticsearch->attachCollection($drupal_planet);
+// Connect an Elasticsearch server.
+$elasticsearch = new Elasticsearch($new SearchEngineEndpoint('local', 'localhost', 'feeds', 9200));
 
-// Create the index and put the mappings.
-$elasticsearch->createIndex();
+// Only difference is that Elasicsearch requires the index is created.
+$indexer = new Indexer(solr);
+$indexer->attachCollection($drupal_planet);
+$indexer->createIndex();
+$indexer->index();
 
-// Index the feeds, execute a search, and delete the index.
-$elasticsearch->index();
-$elasticsearch->search('drupal');
-$elasticsearch->delete();
 ```
 
 Installation

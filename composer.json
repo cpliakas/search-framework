@@ -14,7 +14,11 @@
     "require": {
         "php": ">=5.3.0",
         "symfony/event-dispatcher": "2.*",
-        "symfony/yaml": "2.*"
+        "symfony/yaml": "2.*",
+        "psr/log": "~1.0"
+    },
+    "suggest": {
+        "monolog/monolog": "Allows advanced logging of the Search Framework library."
     },
     "autoload": {
         "psr-0": {

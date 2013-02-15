@@ -8,48 +8,38 @@
 
 namespace Search\Framework;
 
-use Search\Framework\Event\SearchFieldEvent;
-
 /**
- * Models a document containing the source data being indexed.
+ * Models a document that will be indexed by the search engine.
  *
- * This class is usually extended by the backend in order to provide backend
- * specific functionality, for example document level boosting for Lucene-based
- * backends.
+ * This class is sometimes extended by search engines in order to provide
+ * backend, specific functionality, for example document level boosting for
+ * Lucene-based backends.
  */
-class SearchIndexDocument implements \IteratorAggregate
+class IndexDocument implements \IteratorAggregate
 {
     /**
-     * An array of SearchIndexFields objects attached to this document.
+     * The indexer performing the operation.
+     *
+     * @var Indexer
+     */
+    protected $_indexer;
+
+    /**
+     * An array of IndexFields objects attached to this document.
      *
      * @var array
      */
     protected $_fields = array();
 
     /**
-     * The service that is indexing this document.
-     *
-     * @var SearchServiceAbstract
-     */
-    protected $_service;
-
-    /**
-     * The service that is indexing this document.
-     *
-     * @var EventDispatcher
-     */
-    protected $_dispatcher;
-
-    /**
      * Constructs a SearchIndexDocument object.
      *
-     * @param SearchServiceAbstract $service
-     *   The Service that is indexing this document.
+     * @param Indexer $indexer
+     *   The indexer performing the operation.
      */
-    public function __construct(SearchServiceAbstract $service)
+    public function __construct(Indexer $indexer)
     {
-        $this->_service = $service;
-        $this->_dispatcher = SearchRegistry::getDispatcher();
+        $this->_indexer = $indexer;
     }
 
     /**
@@ -60,13 +50,11 @@ class SearchIndexDocument implements \IteratorAggregate
      * are the field's normalized value(s) that are returned by the
      * SearchIndexDocument::getNormalizedFieldValue() method.
      *
-     * @returns SearchIndexFieldIterator
+     * @returns IndexFieldIterator
      */
     public function getIterator()
     {
-        $iterator = new SearchIndexFieldIterator($this->_fields);
-        $iterator->setDocument($this);
-        return $iterator;
+        return new IndexFieldIterator($this->_indexer, $this);
     }
 
     /**
@@ -74,15 +62,15 @@ class SearchIndexDocument implements \IteratorAggregate
      *
      * @return SearchServiceAbstract
      */
-    public function getService()
+    public function getIndexer()
     {
-        return $this->_service;
+        return $this->_indexer;
     }
 
     /**
      * Instantiates and attaches a field to this document.
      *
-     * @return SearchIndexField
+     * @return IndexField
      *
      * @see SearchServiceAbstract::newField()
      */
@@ -98,18 +86,20 @@ class SearchIndexDocument implements \IteratorAggregate
      * This method throws the SearchEvents::FIELD_ENRICH event and stores the
      * enriched value as the field's value.
      *
-     * @param SearchIndexField $field
+     * @param IndexField $field
      *   The field being added to this document.
      *
      * @return SearchIndexDocument
      */
-    public function attachField(SearchIndexField $field)
+    public function attachField(IndexField $field)
     {
+        // Enrich the field here, agent will probably do this.
+
         // Throw the SearchEvents::FIELD_ENRICH event, reset the field's value
         // with the enriched value.
-        $event = new SearchFieldEvent($this->_service, $this, $field);
-        $this->_dispatcher->dispatch(SearchEvents::FIELD_ENRICH, $event);
-        $field->setValue($event->getValue());
+//        $event = new SearchFieldEvent($this->_service, $this, $field);
+//        $this->_dispatcher->dispatch(SearchEvents::FIELD_ENRICH, $event);
+//        $field->setValue($event->getValue());
 
         $id = $field->getId();
         $this->_fields[$id] = $field;
@@ -126,13 +116,12 @@ class SearchIndexDocument implements \IteratorAggregate
      * @param string $id
      *   The unique identifier of the field.
      *
-     * @return SearchIndexField
+     * @return IndexField
      */
     public function getField($id)
     {
         if (!isset($this->_fields[$id])) {
-            // @see SearchIndexDocument::__set()
-            $this->$id = '';
+            $this->$id = ''; // @see SearchIndexDocument::__set()
         }
         return $this->_fields[$id];
     }
@@ -193,34 +182,6 @@ class SearchIndexDocument implements \IteratorAggregate
     }
 
     /**
-     * Returns a field's normalized value.
-     *
-     * This method throws the SearchEvents::FIELD_NORMALIZE event and returns
-     * the normalized value from the event object.
-     *
-     * @param string $id
-     *   The unique identifier of the field.
-     *
-     * @return string|array
-     *   The field's normalized value(s).
-     */
-    public function getNormalizedFieldValue($id)
-    {
-        $field = $this->getField($id);
-        $event = new SearchFieldEvent($this->_service, $this, $field);
-
-        // Allow the service to pre-normalize the value. Store the normalized
-        // value in the event since it contains the value that is returned.
-        $normalized_value = $this->_service->normalizeFieldValue($field);
-        $event->setValue($normalized_value);
-
-        // Allow third party code to apply their normalization routines.
-        $this->_dispatcher->dispatch(SearchEvents::FIELD_NORMALIZE, $event);
-
-        return $event->getValue();
-    }
-
-    /**
      * Instiantiates and adds a field to this document.
      *
      * @param string $id
@@ -230,7 +191,7 @@ class SearchIndexDocument implements \IteratorAggregate
      */
     public function __set($id, $value)
     {
-        $field = $this->_service->newField($id, $value);
+        $field = $this->_indexer->getSearchEngine()->newField($id, $value);
         $this->attachField($field);
     }
 
@@ -241,7 +202,7 @@ class SearchIndexDocument implements \IteratorAggregate
      */
     public function __get($id)
     {
-        return $this->getNormalizedFieldValue($id);
+        return $this->normalizeField($this);
     }
 
     /**

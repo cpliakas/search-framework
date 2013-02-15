@@ -11,7 +11,7 @@ namespace Search\Framework;
 /**
  * Models a field in the source data being indexed.
  */
-class SearchIndexField
+class IndexField
 {
     /**
      * The unique identifier of the field.
@@ -38,7 +38,7 @@ class SearchIndexField
     protected $_value;
 
     /**
-     * Constructs a SearchIndexField object.
+     * Constructs a IndexField object.
      *
      * @param string $id
      *   The unique identifier of the field that the index name defaults to.
@@ -71,7 +71,7 @@ class SearchIndexField
      * @param string $name
      *   The name of this field as stored in the index.
      *
-     * @return SearchIndexField
+     * @return IndexField
      */
     public function setName($name)
     {
@@ -95,7 +95,7 @@ class SearchIndexField
      * @param string|array $value
      *   The field's value extracted form the source text.
      *
-     * @return SearchIndexField
+     * @return IndexField
      */
     public function setValue($value)
     {

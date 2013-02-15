@@ -12,7 +12,7 @@ namespace Search\Framework;
  * And Endpoint that the client library will use to communicate with the search
  * service.
  */
-class SearchServiceEndpoint
+class SearchEngineEndpoint
 {
     /**
      * The unique identifier of this endpoint.
@@ -126,18 +126,13 @@ class SearchServiceEndpoint
     }
 
     /**
-     * Returns an option's value.
-     *
-     * @param string $option
-     *   The name of the option.
-     * @param mixed $default
-     *   The value returned if the option does not exist.
+     * Returns the search engine specific option.
      *
      * @return mixed
      *   The option's value.
      */
-    public function getOption($option, $default = null)
+    public function getOptions()
     {
-        return isset($this->options[$option]) ? $this->options[$option] : $default;
+        return $this->options;
     }
 }

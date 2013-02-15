@@ -14,19 +14,19 @@ namespace Search\Framework;
  * This message should be extended by the queue backends to store their native
  * message objects and implement backend specific functionality.
  */
-class SearchQueueMessage
+class QueueMessage
 {
     /**
      * The queue that the messages is published to / consumed from.
      *
-     * @var SearchQueueAbstract
+     * @var QueueAbstract
      */
     protected $_queue;
 
     /**
      * The collection containing the item that is scheduled for indexing.
      *
-     * @var SearchCollectionAbstract
+     * @var CollectionAbstract
      */
     protected $_collection;
 
@@ -56,12 +56,12 @@ class SearchQueueMessage
     protected $_id;
 
     /**
-     * Constructs a SearchQueueAbstract object.
+     * Constructs a QueueAbstract object.
      *
-     * @param SearchQueueAbstract $queue
+     * @param QueueAbstract $queue
      *   The queue that the messages is published to / consumed from.
      */
-    public function __construct(SearchQueueAbstract $queue)
+    public function __construct(QueueAbstract $queue)
     {
         $this->_queue = $queue;
     }
@@ -69,7 +69,7 @@ class SearchQueueMessage
     /**
      * Returns the queue that the messages is published to / consumed from.
      *
-     * @return SearchCollectionAbstract
+     * @return CollectionAbstract
      */
     public function getQueue()
     {
@@ -80,13 +80,13 @@ class SearchQueueMessage
      * Sets the collection containing the item being published to or consumed
      * from the queue.
      *
-     * @param SearchCollectionAbstract $collection
+     * @param CollectionAbstract $collection
      *   The collection containing the item being published to or consumed from
      *   the queue.
      *
-     * @return SearchQueueMessage
+     * @return QueueMessage
      */
-    public function setCollection(SearchCollectionAbstract $collection)
+    public function setCollection(CollectionAbstract $collection)
     {
         $this->_collection = $collection;
         return $this;
@@ -96,7 +96,7 @@ class SearchQueueMessage
      * Returns the collection containing the item being published to or consumed
      * from the queue.
      *
-     * @return SearchCollectionAbstract
+     * @return CollectionAbstract
      */
     public function getCollection()
     {
@@ -109,7 +109,7 @@ class SearchQueueMessage
      * @param string $body
      *   The message body.
      *
-     * @return SearchQueueMessage
+     * @return QueueMessage
      */
     public function setBody($body)
     {
@@ -137,7 +137,7 @@ class SearchQueueMessage
      *   Whether there was an error fetching the message from the queue,
      *   defaults to true.
      *
-     * @return SearchQueueMessage
+     * @return QueueMessage
      */
     public function setError($error = true)
     {
@@ -165,7 +165,7 @@ class SearchQueueMessage
      * @param int|string $id
      *   The unique identifier of the consumed message.
      *
-     * @return SearchQueueMessage
+     * @return QueueMessage
      */
     public function setId($id)
     {

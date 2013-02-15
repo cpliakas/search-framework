@@ -8,36 +8,39 @@
 
 namespace Search\Framework\Event;
 
-use Search\Framework\SearchCollectionAbstract;
-use Symfony\Component\EventDispatcher\Event;
+use Search\Framework\CollectionAbstract;
+use Search\Framework\CollectionAgentAbstract;
 
 /**
  * Event object for collection related events.
  */
-class SearchCollectionEvent extends Event
+class CollectionEvent extends SearchEvent
 {
     /**
      * The collection being processed.
      *
-     * @var SearchCollectionAbstract
+     * @var CollectionAbstract
      */
     protected $_collection;
 
     /**
-     * Constructs a SearchCollectionEvent object.
+     * Constructs a CollectionEvent object.
      *
-     * @param SearchCollectionAbstract $collection
+     * @param CollectionAgentAbstract $agent
+     *   The collection agent performing the operation.
+     * @param CollectionAbstract $collection
      *   The collection being processed.
      */
-    public function __construct(SearchCollectionAbstract $collection)
+    public function __construct(CollectionAgentAbstract $agent, CollectionAbstract $collection)
     {
+        $this->_agent = $agent;
         $this->_collection = $collection;
     }
 
     /**
      * Returns the collection being processed.
      *
-     * @return SearchCollectionAbstract
+     * @return CollectionAbstract
      */
     public function getCollection()
     {
