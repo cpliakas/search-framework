@@ -90,6 +90,22 @@ $indexer = new Indexer($solr);
 
 ```
 
+Optionally use PSR-3 compliant loggers such as [Monolog](/Seldaek/monolog) to
+audit search related events and aid in debugging.
+
+```php
+
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$log = new Logger('search');
+$log->pushHandler(new StreamHandler('search.log', Logger::INFO));
+// Use Logger::DEBUG for development and learning about the application flow.
+
+$indexer->setLogger($log);
+
+```
+
 Installation
 ============
 
