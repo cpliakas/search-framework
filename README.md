@@ -1,5 +1,4 @@
-Overview
-========
+# Overview
 
 The Search Framework library is a standards compliant PHP project that aims to
 share concepts, nomenclature, and code across search applications. Its mission
@@ -13,8 +12,7 @@ the community. It also assumes that PHP is not always the best fit for various
 operations related to search, so it is designed to integrate with non-PHP tools
 where appropriate.
 
-What does this library do?
-==========================
+## What does this library do?
 
 The primary focus of the Search Framework library from a technical standpoint is
 on the **document processing methodology**, in other words facilitating data
@@ -31,8 +29,7 @@ the underlying technology. The main goals are to help bridge the communication
 gaps between search projects and facilitate writing interoperable code by
 adhering to best practices and techniques.
 
-Is the library also a search abstraction layer?
-===============================================
+## Is the library also a search abstraction layer?
 
 No, absolutely not. Unlike database management systems that are similar enough
 to abstract 80% of the most common use cases, search engines such as Solr,
@@ -45,8 +42,7 @@ is trying to solve while at the same time masking the benefits of the search
 engine. The Search Framework library abstracts only the most basic search
 operations while allowing the backend clients to do what they do best.
 
-Basic Usage
-===========
+## Basic Usage
 
 The code below indexes the "Drupal Planet" RSS feed into Elasticsearch.
 
@@ -106,8 +102,7 @@ $indexer->setLogger($log);
 
 ```
 
-Installation
-============
+# Installation
 
 To install the required libraries, execute the following commands in the
 directory where this library is extracted.
