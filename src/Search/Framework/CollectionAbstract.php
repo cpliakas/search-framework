@@ -3,7 +3,10 @@
 /**
  * Search Framework
  *
- * @license http://www.gnu.org/licenses/lgpl-3.0.txt
+ * @author    Chris Pliakas <opensource@chrispliakas.com>
+ * @copyright 2013 Chris Pliakas
+ * @license   http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public License (LGPL)
+ * @link      https://github.com/cpliakas/search-framework
  */
 
 namespace Search\Framework;
@@ -40,7 +43,7 @@ abstract class CollectionAbstract
      *
      * @var string
      */
-    protected $_type = '';
+    protected $type = '';
 
     /**
      * The basename of the configuration file with the ".yml" extension
@@ -52,7 +55,7 @@ abstract class CollectionAbstract
      *
      * @var string
      */
-    protected static $_configBasename = '';
+    protected static $configBasename = '';
 
     /**
      * The unique identifier of the collection instance.
@@ -67,19 +70,17 @@ abstract class CollectionAbstract
      *
      * @var string
      */
-    protected $_id;
+    protected $id;
 
     /**
      * Constructs a CollectionAbstract object.
      *
-     * @param string $id
-     *   The unique identifier of the collection instance.
-     * @param array $options
-     *   An associative array of collection specific configuration options.
+     * @param string $id      The unique identifier of the collection instance.
+     * @param array  $options An associative array of collection specific configuration options.
      */
     public function __construct($id, array $options = array())
     {
-        $this->_id = $id;
+        $this->id = $id;
         $this->init($options);
     }
 
@@ -89,8 +90,9 @@ abstract class CollectionAbstract
      * This is most often used to instantiate a backend library, for example a
      * database connection, ORM, feed parser, etc.
      *
-     * @param array $options
-     *   An associative array of collection specific option.
+     * @param array $options An associative array of collection specific option.
+     *
+     * @return null
      */
     abstract public function init(array $options);
 
@@ -102,8 +104,7 @@ abstract class CollectionAbstract
      * for indexing. Although this sounds complex, it could be as simple as a
      * feed parser fetching items from an RSS feed.
      *
-     * @param int $limit
-     *   The maximum number of items to fetch.
+     * @param int $limit The maximum number of items to fetch.
      *
      * @return \Iterator
      */
@@ -115,11 +116,12 @@ abstract class CollectionAbstract
      * This hook is usually invoked by the QueueProducer::valid() method prior
      * to publishing the item to the indexing queue.
      *
-     * @param QueueMessage $message
-     *   The message that will be published to the queue.
-     * @param mixed $item
+     * @param QueueMessage $message The message that will be published to the queue.
+     * @param mixed        $item
      *   The item that is scheduled for indexing. An item is something that is
      *   fetched from the CollectionAbstract::fetchScheduledItems() method.
+     *
+     * @return null
      */
     abstract public function buildQueueMessage(QueueMessage $message, $item);
 
@@ -156,11 +158,11 @@ abstract class CollectionAbstract
      *
      * @return string
      *
-     * @see CollectionAbstract::_id
+     * @see CollectionAbstract::id
      */
     public function getId()
     {
-        return $this->_id;
+        return $this->id;
     }
 
     /**
@@ -169,11 +171,11 @@ abstract class CollectionAbstract
      *
      * @return string
      *
-     * @see CollectionAbstract::_configBasename
+     * @see CollectionAbstract::configBasename
      */
     public function getConfigBasename()
     {
-        return static::$_configBasename;
+        return static::$configBasename;
     }
 
     /**
@@ -186,7 +188,7 @@ abstract class CollectionAbstract
      */
     public function setType($type)
     {
-        $this->_type = $type;
+        $this->type = $type;
         return $this;
     }
 
@@ -197,6 +199,6 @@ abstract class CollectionAbstract
      */
     public function getType()
     {
-        return $this->_type;
+        return $this->type;
     }
 }
